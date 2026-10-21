@@ -1,0 +1,14 @@
+{
+  "name": "@lotterynewsafe/websocket-runtime",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "tsx server.ts"
+  },
+  "dependencies": {
+    "ws": "^8.20.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.6",
+    "typescript": "^5"
+  }
+}

@@ -75,6 +75,12 @@ jobs:
             deno lint "${file}"
           done
 
+          mapfile -d '' test_files < <(find supabase/functions -type f -name '*_test.ts' -print0)
+          for test_file in "${test_files[@]}"; do
+            echo "Testing ${test_file}"
+            deno test "${test_file}"
+          done
+
           mapfile -t entrypoints < <(
             find supabase/functions -mindepth 2 -maxdepth 2 -type f -name 'index.ts'
           )

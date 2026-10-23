@@ -16,6 +16,10 @@ function makeResponse(
   const headers = new Headers(corsHeaders);
   headers.set("x-request-id", requestId);
 
+  if (status === 405) {
+    headers.set("allow", "GET, HEAD, OPTIONS");
+  }
+
   if (body !== null) {
     headers.set("content-type", "application/json; charset=utf-8");
   }

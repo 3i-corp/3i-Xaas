@@ -129,6 +129,11 @@ jobs:
             exit 1
           fi
 
+          if [[ "${SUPABASE_PROJECT_ID}" != "nxbervftnchjhpaxjqqu" ]]; then
+            echo "::error::SUPABASE_PROJECT_ID does not match the configured target project."
+            exit 1
+          fi
+
       - name: Set up Supabase CLI
         uses: supabase/setup-cli@v1
         with:

@@ -36,6 +36,8 @@ jobs:
   validate:
     name: Validate Edge Functions
     runs-on: ubuntu-latest
+    outputs:
+      has_functions: ${{ steps.validate_sources.outputs.has_functions }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -48,30 +50,23 @@ jobs:
           deno-version: v2.x
 
       - name: Validate Edge Function sources
+        id: validate_sources
         shell: bash
         run: |
           set -euo pipefail
 
           if [[ ! -d "supabase/functions" ]]; then
-            if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
-              echo "::warning::No supabase/functions directory exists yet. Source validation is skipped until Edge Functions are added."
-              exit 0
-            fi
-
-            echo "::error::supabase/functions was not found. Add at least one Edge Function before deploying."
-            exit 1
+            echo "has_functions=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::No supabase/functions directory exists yet. Validation and deployment are skipped until Edge Functions are added."
+            exit 0
           fi
 
           mapfile -d '' files < <(find supabase/functions -type f -name '*.ts' -print0)
 
           if (( ${#files[@]} == 0 )); then
-            if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
-              echo "::warning::No TypeScript files found under supabase/functions; source validation is skipped."
-              exit 0
-            fi
-
-            echo "::error::No TypeScript files found under supabase/functions."
-            exit 1
+            echo "has_functions=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::No TypeScript files found under supabase/functions; deployment is skipped."
+            exit 0
           fi
 
           for file in "${files[@]}"; do
@@ -90,6 +85,7 @@ jobs:
           fi
 
           echo "Validated ${#files[@]} TypeScript file(s) and found ${#entrypoints[@]} function entrypoint(s)."
+          echo "has_functions=true" >> "$GITHUB_OUTPUT"
 
   deploy:
     name: Deploy to Supabase
@@ -97,8 +93,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     if: >-
-      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+      needs.validate.outputs.has_functions == 'true' &&
+      (
+        (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+        (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+      )
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}

@@ -50,7 +50,7 @@ Deno.test("OPTIONS supports browser preflight", () => {
   }
 });
 
-Deno.test("unsupported methods return 405", async () => {
+Deno.test("unsupported methods return 405 with Allow header", async () => {
   const response = handleHealthRequest(
     new Request("https://example.test/functions/v1/health", {
       method: "POST",
@@ -60,5 +60,8 @@ Deno.test("unsupported methods return 405", async () => {
 
   if (response.status !== 405 || body.error !== "method_not_allowed") {
     throw new Error("Unsupported methods should return a 405 error.");
+  }
+  if (response.headers.get("allow") !== "GET, HEAD, OPTIONS") {
+    throw new Error("405 responses must include Allow: GET, HEAD, OPTIONS.");
   }
 });

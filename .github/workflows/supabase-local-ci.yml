@@ -1,0 +1,113 @@
+name: Supabase Local CI & Integration Tests
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-local-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  local-ci:
+    name: Local CI and Supabase integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # 1. Checkout source
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # 2. Install Node.js and cache dependencies using the root lockfile
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      # 3. Install repository dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # The current repository does not yet contain supabase/config.toml
+      # or a root test:integration script. Skip local integration startup
+      # until both are committed, while keeping dependency CI active.
+      - name: Check integration test prerequisites
+        id: integration
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          has_config=false
+          has_script=false
+
+          if [[ -f "supabase/config.toml" ]]; then
+            has_config=true
+          fi
+
+          if node -e "process.exit(require('./package.json').scripts?.['test:integration'] ? 0 : 1)"; then
+            has_script=true
+          fi
+
+          if [[ "$has_config" == "true" && "$has_script" == "true" ]]; then
+            echo "run_tests=true" >> "$GITHUB_OUTPUT"
+            echo "Supabase config and test:integration script found."
+          else
+            echo "run_tests=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Skipping local Supabase integration tests: both supabase/config.toml and a root package.json scripts.test:integration entry are required."
+          fi
+
+      # 4. Install Supabase CLI only when local integration tests can run
+      - name: Setup Supabase CLI
+        if: steps.integration.outputs.run_tests == 'true'
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # 5. Start the local Supabase stack (Docker is available on GitHub-hosted Ubuntu runners)
+      - name: Start Supabase locally
+        if: steps.integration.outputs.run_tests == 'true'
+        run: supabase start
+
+      # 6. Export local connection settings for subsequent steps.
+      # These are generated locally for the ephemeral test instance and are not GitHub Secrets.
+      - name: Generate local environment variables
+        if: steps.integration.outputs.run_tests == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          supabase status --output env >> "$GITHUB_ENV"
+          echo "SUPABASE_URL=http://127.0.0.1:54321" >> "$GITHUB_ENV"
+
+          service_role_key="$(supabase status --output json | jq -er '.SERVICE_ROLE_KEY')"
+          if [[ -z "$service_role_key" || "$service_role_key" == "null" ]]; then
+            echo "::error::Could not retrieve the local Supabase service role key."
+            exit 1
+          fi
+
+          echo "SUPABASE_SERVICE_ROLE_KEY=$service_role_key" >> "$GITHUB_ENV"
+
+      # 7. Run project integration tests against the local instance
+      - name: Run integration tests
+        if: steps.integration.outputs.run_tests == 'true'
+        run: npm run test:integration
+
+      - name: Report integration test status
+        if: steps.integration.outputs.run_tests != 'true'
+        run: echo "Local Supabase integration tests were not run because the repository prerequisites are not present yet."
+
+      # 8. Always stop the local stack if it was started
+      - name: Stop Supabase
+        if: always() && steps.integration.outputs.run_tests == 'true'
+        run: supabase stop

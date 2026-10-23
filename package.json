@@ -6,7 +6,8 @@
   ],
   "scripts": {
     "dev:web": "cd apps/web && npm run dev",
-    "dev:ws": "cd packages/websocket-runtime && npm run dev"
+    "dev:ws": "cd packages/websocket-runtime && npm run dev",
+    "test:integration": "node scripts/test-integration.mjs"
   },
   "devDependencies": {
     "turbo": "^2.9.14"

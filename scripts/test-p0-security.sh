@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+MIGRATION_FILE="$ROOT_DIR/supabase/migrations/20261024000416_p0_restrict_public_api_grants.sql"
+FIXTURE_FILE="$ROOT_DIR/supabase/tests/fixtures/p0_security_baseline.sql"
+ASSERTIONS_FILE="$ROOT_DIR/supabase/tests/p0_security_assertions.sql"
+DB_CONTAINER="supabase_db_3i-xaas-local"
+
+if [[ "${P0_TEST_ALLOW_RESET:-}" != "1" ]]; then
+  echo "Refusing to run destructive P0 fixture without P0_TEST_ALLOW_RESET=1." >&2
+  exit 2
+fi
+
+for file in "$MIGRATION_FILE" "$FIXTURE_FILE" "$ASSERTIONS_FILE"; do
+  if [[ ! -f "$file" ]]; then
+    echo "Required P0 security test file not found: $file" >&2
+    exit 2
+  fi
+done
+
+if ! docker ps --format '{{.Names}}' | grep -Fxq "$DB_CONTAINER"; then
+  echo "Refusing to run: expected disposable local Supabase container '$DB_CONTAINER' is not running." >&2
+  echo "Start the local stack from this repository's supabase/config.toml first." >&2
+  exit 2
+fi
+
+run_psql() {
+  docker exec -i "$DB_CONTAINER" psql -X -v ON_ERROR_STOP=1 -U postgres -d postgres "$@"
+}
+
+echo "P0 security test: preparing a disposable local-only fixture."
+run_psql < "$FIXTURE_FILE"
+
+echo "P0 security test: applying the exact migration file directly (not recording migration history)."
+run_psql < "$MIGRATION_FILE"
+
+echo "P0 security test: checking grant state, RLS-visible reads, and future postgres-owned object defaults."
+run_psql < "$ASSERTIONS_FILE"
+
+expect_denied() {
+  local role="$1"
+  local label="$2"
+  local statement="$3"
+  local output
+  output="$(mktemp)"
+  if printf 'SET ROLE %s;\n%s\nRESET ROLE;\n' "$role" "$statement" | run_psql >"$output" 2>&1; then
+    echo "::error::Expected denial but operation succeeded: role=$role operation=$label" >&2
+    cat "$output" >&2
+    rm -f "$output"
+    exit 1
+  fi
+  if ! grep -Eiq 'permission denied|must be owner' "$output"; then
+    echo "::error::Operation failed for an unexpected reason: role=$role operation=$label" >&2
+    cat "$output" >&2
+    rm -f "$output"
+    exit 1
+  fi
+  echo "PASS denied: role=$role operation=$label"
+  rm -f "$output"
+}
+
+for role in anon authenticated; do
+  expect_denied "$role" "SELECT public.users" "SELECT * FROM public.users;"
+  expect_denied "$role" "SELECT public.orders" "SELECT * FROM public.orders;"
+  expect_denied "$role" "SELECT public.order_items" "SELECT * FROM public.order_items;"
+  expect_denied "$role" "INSERT public.users" "INSERT INTO public.users (id, email) VALUES (gen_random_uuid(), 'p0-negative@example.invalid');"
+  expect_denied "$role" "UPDATE public.orders" "UPDATE public.orders SET status = status WHERE false;"
+  expect_denied "$role" "DELETE public.order_items" "DELETE FROM public.order_items WHERE false;"
+  expect_denied "$role" "TRUNCATE public.users" "TRUNCATE TABLE public.users;"
+  expect_denied "$role" "TRUNCATE public.orders" "TRUNCATE TABLE public.orders;"
+done
+
+echo "PASS P0 security migration and negative privilege tests on the disposable local Supabase database."

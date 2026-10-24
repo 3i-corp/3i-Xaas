@@ -35,6 +35,11 @@ BEGIN
     END LOOP;
   END LOOP;
 
+  IF has_column_privilege('anon', 'public.users', 'email', 'SELECT')
+     OR has_column_privilege('authenticated', 'public.users', 'email', 'SELECT') THEN
+    RAISE EXCEPTION 'FAIL: client role retains column-level SELECT on protected public.users.email';
+  END IF;
+
   IF NOT has_table_privilege('service_role', 'public.users', 'INSERT')
      OR NOT has_table_privilege('service_role', 'public.orders', 'DELETE')
      OR NOT has_sequence_privilege('service_role', 'public.p0_existing_sequence', 'USAGE') THEN

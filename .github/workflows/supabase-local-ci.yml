@@ -39,9 +39,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # The current repository does not yet contain supabase/config.toml
-      # or a root test:integration script. Skip local integration startup
-      # until both are committed, while keeping dependency CI active.
+      # Start the disposable local stack only when both integration prerequisites exist.
       - name: Check integration test prerequisites
         id: integration
         shell: bash
@@ -78,6 +76,14 @@ jobs:
       - name: Start Supabase locally
         if: steps.integration.outputs.run_tests == 'true'
         run: supabase start
+
+      # This test resets only the explicitly named local CI database fixture.
+      # It does not use remote project credentials or deploy anything.
+      - name: Test P0 public grants and default privileges
+        if: steps.integration.outputs.run_tests == 'true'
+        env:
+          P0_TEST_ALLOW_RESET: "1"
+        run: bash scripts/test-p0-security.sh
 
       # 6. Export local connection settings for subsequent steps.
       # These are generated locally for the ephemeral test instance and are not GitHub Secrets.

@@ -160,13 +160,13 @@ export default function CoreSystemPrototype() {
                     type="button"
                     aria-pressed={metric === "activity"}
                     onClick={() => setMetric("activity")}
-                    className={`rounded-lg px-3 py-2 text-xs font-semibold ${metric === "activity" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}
+                    className={`rounded-lg px-3 py-2 text-xs font-semibold ${metric === "activity" ? "bg-white text-slate-900 shadow-sm" : "text-slate-700"}`}
                   >Activity</button>
                   <button
                     type="button"
                     aria-pressed={metric === "adoption"}
                     onClick={() => setMetric("adoption")}
-                    className={`rounded-lg px-3 py-2 text-xs font-semibold ${metric === "adoption" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}
+                    className={`rounded-lg px-3 py-2 text-xs font-semibold ${metric === "adoption" ? "bg-white text-slate-900 shadow-sm" : "text-slate-700"}`}
                   >Adoption index</button>
                 </div>
               </div>
@@ -183,6 +183,16 @@ export default function CoreSystemPrototype() {
                   </div>;
                 })}
               </div>
+              <table className="sr-only">
+                <caption>{`${serviceNames[selected]} monthly synthetic ${metric === "activity" ? "activity counts" : "adoption index percentages"}, May through October`}</caption>
+                <thead><tr><th scope="col">Month</th><th scope="col">{metric === "activity" ? "Activity count" : "Adoption index"}</th></tr></thead>
+                <tbody>{points.map((point) => (
+                  <tr key={`accessible-${point.month}`}>
+                    <th scope="row">{point.month}</th>
+                    <td>{metric === "activity" ? fmt(point.activity) : `${point.adoption}%`}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
               <p className="mt-5 text-xs leading-5 text-slate-500">Activity is a service-specific simulated count, not a cross-service comparable unit. Adoption index is a scenario percentage for prototype exploration only.</p>
             </section>
 

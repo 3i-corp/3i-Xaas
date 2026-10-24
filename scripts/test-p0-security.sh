@@ -35,7 +35,7 @@ run_psql < "$FIXTURE_FILE"
 echo "P0 security test: applying the exact migration file directly (not recording migration history)."
 run_psql < "$MIGRATION_FILE"
 
-echo "P0 security test: checking grant state, RLS-visible reads, and future postgres-owned object defaults."
+echo "P0 security test: checking grants, RLS-visible reads, and future object defaults."
 run_psql < "$ASSERTIONS_FILE"
 
 expect_denied() {
@@ -70,5 +70,24 @@ for role in anon authenticated; do
   expect_denied "$role" "TRUNCATE public.users" "TRUNCATE TABLE public.users;"
   expect_denied "$role" "TRUNCATE public.orders" "TRUNCATE TABLE public.orders;"
 done
+
+echo "P0 security test: verifying policy drift fails closed."
+run_psql -c 'CREATE POLICY "P0 unexpected permissive products" ON public.products FOR SELECT TO anon USING (true);'
+output="$(mktemp)"
+if run_psql < "$MIGRATION_FILE" >"$output" 2>&1; then
+  echo "::error::Migration unexpectedly accepted an additional products SELECT policy." >&2
+  cat "$output" >&2
+  rm -f "$output"
+  exit 1
+fi
+if ! grep -Fq 'Unexpected SELECT/ALL policy set for products' "$output"; then
+  echo "::error::Migration failed for an unexpected reason during policy-drift probe." >&2
+  cat "$output" >&2
+  rm -f "$output"
+  exit 1
+fi
+rm -f "$output"
+run_psql -c 'DROP POLICY "P0 unexpected permissive products" ON public.products;'
+echo "PASS policy drift rejected before privilege changes."
 
 echo "PASS P0 security migration and negative privilege tests on the disposable local Supabase database."

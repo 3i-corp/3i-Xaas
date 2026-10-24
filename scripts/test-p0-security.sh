@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MIGRATION_FILE="$ROOT_DIR/supabase/migrations/20261024000416_p0_restrict_public_api_grants.sql"
+MIGRATION_FILE="$ROOT_DIR/supabase/proposals/p0_restrict_public_api_grants.sql"
 FIXTURE_FILE="$ROOT_DIR/supabase/tests/fixtures/p0_security_baseline.sql"
 ASSERTIONS_FILE="$ROOT_DIR/supabase/tests/p0_security_assertions.sql"
 DB_CONTAINER="supabase_db_3i-xaas-local"

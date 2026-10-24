@@ -64,6 +64,18 @@ Required:
 
 Exit: explicit release approval. Only the approved scope may be activated.
 
+## Controlled exception path — minimum necessary scope
+
+A temporary exception may be considered only for a non-critical process or evidence requirement. An exception never turns an unmet mandatory gate into PASS.
+
+**Eligible with independent approval:** a genuinely non-applicable criterion recorded as N/A with rationale; a temporary tool/device blocker supported by equivalent safe evidence; or a low-risk, non-production procedural shortcut that preserves security, auditability, data isolation, and recovery controls.
+
+**Required record:** requester and timestamp; technical/business justification and impact of waiting; exact criterion, artifact/commit, environment, included scope and exclusions; risk assessment; compensating controls and verification criteria; evidence links; accountable owner; remediation due date and expiry; named independent decision-maker; and explicit APPROVE / REJECT / NEEDS CHANGES decision with conditions.
+
+**Never eligible:** Phase 0 restrictions; required independent sign-off; authentication, authorization, RLS/access boundaries, secrets protection, tenant isolation, ledger integrity, data-loss prevention or recovery safeguards; hiding critical/high-severity issues; missing safety-critical CI; prototype acceptance before live module/data activation; III Wallet readiness; system-wide production readiness; or explicit release approval. An exception does not authorize Production changes, real data, money movement, activation, deployment, or Go-Live.
+
+Use the smallest sufficient scope. An approved deferral remains DEFERRED or IN REVIEW, not PASS, unless the published gate expressly allows an independently reviewed alternative. Approval is time-limited and applies only to the recorded scope. Expiry, scope drift, failed controls, or changed assumptions suspends the exception. The requester cannot approve their own request. If independent authority is unavailable, the request remains pending.
+
 ## Mandatory stop conditions
 
 Stop and report instead of proceeding if:

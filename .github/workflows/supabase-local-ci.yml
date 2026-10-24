@@ -93,15 +93,27 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Mask ephemeral local credentials before later steps inherit and print their environment.
+          # These are synthetic/local-only keys, not production credentials, but must not appear in logs.
+          source <(supabase status --output env)
+          for name in ANON_KEY SERVICE_ROLE_KEY PUBLISHABLE_KEY SECRET_KEY \
+                      S3_PROTOCOL_ACCESS_KEY_ID S3_PROTOCOL_ACCESS_KEY_SECRET JWT_SECRET; do
+            value="${!name:-}"
+            if [[ -n "$value" ]]; then
+              echo "::add-mask::$value"
+            fi
+          done
+
           supabase status --output env >> "$GITHUB_ENV"
           echo "SUPABASE_URL=http://127.0.0.1:54321" >> "$GITHUB_ENV"
 
-          service_role_key="$(supabase status --output json | jq -er '.SERVICE_ROLE_KEY')"
+          service_role_key="${SERVICE_ROLE_KEY:-}"
           if [[ -z "$service_role_key" || "$service_role_key" == "null" ]]; then
             echo "::error::Could not retrieve the local Supabase service role key."
             exit 1
           fi
 
+          echo "::add-mask::$service_role_key"
           echo "SUPABASE_SERVICE_ROLE_KEY=$service_role_key" >> "$GITHUB_ENV"
 
       # 7. Run project integration tests against the local instance

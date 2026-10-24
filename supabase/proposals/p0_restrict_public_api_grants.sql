@@ -84,6 +84,32 @@ BEGIN
 END
 $preflight$;
 
+-- Remove column-level grants as well as relation-level grants. Relation-level
+-- REVOKE does not cancel a separate column ACL. Iterate only the five inventoried
+-- application tables and only the three client/public principals.
+DO $column_acl_revoke$
+DECLARE
+  col record;
+BEGIN
+  FOR col IN
+    SELECT n.nspname, c.relname, a.attname
+    FROM pg_attribute a
+    JOIN pg_class c ON c.oid = a.attrelid
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public'
+      AND c.relname IN ('users', 'categories', 'products', 'orders', 'order_items')
+      AND c.relkind IN ('r', 'p')
+      AND a.attnum > 0
+      AND NOT a.attisdropped
+  LOOP
+    EXECUTE format(
+      'REVOKE ALL (%I) ON TABLE %I.%I FROM PUBLIC, anon, authenticated',
+      col.attname, col.nspname, col.relname
+    );
+  END LOOP;
+END
+$column_acl_revoke$;
+
 -- Remove direct and PUBLIC privileges. PUBLIC grants are inherited by client
 -- roles, so revoking only from anon/authenticated is not sufficient.
 REVOKE ALL PRIVILEGES ON TABLE

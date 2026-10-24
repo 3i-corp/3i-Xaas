@@ -32,7 +32,54 @@ run_psql() {
 echo "P0 security test: preparing a disposable local-only fixture."
 run_psql < "$FIXTURE_FILE"
 
-echo "P0 security test: applying the exact migration file directly (not recording migration history)."
+assert_preflight_left_grants_unchanged() {
+  run_psql -c 'DO $assert_unchanged$
+  BEGIN
+    IF NOT has_table_privilege('"'anon'"', '"'public.users'"', '"'SELECT'"')
+       OR NOT has_column_privilege('"'anon'"', '"'public.users'"', '"'email'"', '"'SELECT'"')
+       OR NOT has_table_privilege('"'authenticated'"', '"'public.orders'"', '"'INSERT'"') THEN
+      RAISE EXCEPTION 'FAIL: rejected preflight changed fixture grants before authorization checks completed';
+    END IF;
+  END
+  $assert_unchanged$;'
+}
+
+expect_policy_drift_rejected() {
+  local table_name="$1"
+  local policy_name="$2"
+  local policy_sql="$3"
+  local output
+  run_psql -c "$policy_sql"
+  output="$(mktemp)"
+  if run_psql < "$MIGRATION_FILE" >"$output" 2>&1; then
+    echo "::error::Migration unexpectedly accepted policy drift: table=$table_name policy=$policy_name" >&2
+    cat "$output" >&2
+    rm -f "$output"
+    exit 1
+  fi
+  if ! grep -Fq "Unexpected SELECT/ALL policy set for $table_name" "$output"; then
+    echo "::error::Migration failed for an unexpected reason during policy-drift probe: table=$table_name policy=$policy_name" >&2
+    cat "$output" >&2
+    rm -f "$output"
+    exit 1
+  fi
+  rm -f "$output"
+  assert_preflight_left_grants_unchanged
+  run_psql -c "DROP POLICY \"$policy_name\" ON public.$table_name;"
+  echo "PASS fail-closed preflight: table=$table_name policy=$policy_name; fixture grants unchanged"
+}
+
+echo "P0 security test: verify SELECT/ALL policy drift is rejected before any grant changes."
+expect_policy_drift_rejected "products" "P0 unexpected permissive products SELECT" \
+  'CREATE POLICY "P0 unexpected permissive products SELECT" ON public.products FOR SELECT TO anon USING (true);'
+expect_policy_drift_rejected "products" "P0 unexpected permissive products ALL" \
+  'CREATE POLICY "P0 unexpected permissive products ALL" ON public.products FOR ALL TO anon USING (true) WITH CHECK (true);'
+expect_policy_drift_rejected "categories" "P0 unexpected permissive categories SELECT" \
+  'CREATE POLICY "P0 unexpected permissive categories SELECT" ON public.categories FOR SELECT TO anon USING (true);'
+expect_policy_drift_rejected "categories" "P0 unexpected permissive categories ALL" \
+  'CREATE POLICY "P0 unexpected permissive categories ALL" ON public.categories FOR ALL TO anon USING (true) WITH CHECK (true);'
+
+echo "P0 security test: applying the exact migration file to the clean synthetic fixture (not recording migration history)."
 run_psql < "$MIGRATION_FILE"
 
 echo "P0 security test: checking grants, RLS-visible reads, and future object defaults."
@@ -71,40 +118,5 @@ for role in anon authenticated; do
   expect_denied "$role" "TRUNCATE public.users" "TRUNCATE TABLE public.users;"
   expect_denied "$role" "TRUNCATE public.orders" "TRUNCATE TABLE public.orders;"
 done
-
-echo "P0 security test: verifying policy drift fails closed."
-run_psql -c 'CREATE POLICY "P0 unexpected permissive products" ON public.products FOR SELECT TO anon USING (true);'
-output="$(mktemp)"
-if run_psql < "$MIGRATION_FILE" >"$output" 2>&1; then
-  echo "::error::Migration unexpectedly accepted an additional products SELECT policy." >&2
-  cat "$output" >&2
-  rm -f "$output"
-  exit 1
-fi
-if ! grep -Fq 'Unexpected SELECT/ALL policy set for products' "$output"; then
-  echo "::error::Migration failed for an unexpected reason during policy-drift probe." >&2
-  cat "$output" >&2
-  rm -f "$output"
-  exit 1
-fi
-rm -f "$output"
-run_psql -c 'DROP POLICY "P0 unexpected permissive products" ON public.products;'
-run_psql -c 'CREATE POLICY "P0 unexpected ALL products" ON public.products FOR ALL TO anon USING (true) WITH CHECK (true);'
-output="$(mktemp)"
-if run_psql < "$MIGRATION_FILE" >"$output" 2>&1; then
-  echo "::error::Migration unexpectedly accepted an additional products ALL policy." >&2
-  cat "$output" >&2
-  rm -f "$output"
-  exit 1
-fi
-if ! grep -Fq 'Unexpected SELECT/ALL policy set for products' "$output"; then
-  echo "::error::Migration failed for an unexpected reason during ALL-policy drift probe." >&2
-  cat "$output" >&2
-  rm -f "$output"
-  exit 1
-fi
-rm -f "$output"
-run_psql -c 'DROP POLICY "P0 unexpected ALL products" ON public.products;'
-echo "PASS SELECT and ALL policy drift rejected before privilege changes."
 
 echo "PASS P0 security migration and negative privilege tests on the disposable local Supabase database."

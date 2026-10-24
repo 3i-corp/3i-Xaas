@@ -1,7 +1,7 @@
 # P0 Security Migration Proposal — Grants & Default Privileges
 
 - **Status:** Proposed implementation; local-only tests are required in CI before review completion
-- **Migration:** `supabase/migrations/20261024000416_p0_restrict_public_api_grants.sql`
+- **SQL proposal (not yet in migration chain):** `supabase/proposals/p0_restrict_public_api_grants.sql`
 - **Test runner:** `scripts/test-p0-security.sh`
 - **Target live project (read-only audit reference only):** `nxbervftnchjhpaxjqqu`
 - **Execution boundary:** No live SQL was applied. This PR must not deploy or apply the migration to a shared environment.
@@ -25,7 +25,7 @@ RLS policies are intentionally not rewritten here. The migration requires the ex
 
 ## 2. Scope of the migration
 
-The migration:
+The proposed SQL, when approved and later moved into the migration chain after schema baseline reconciliation:
 
 1. Fails closed unless run as `postgres`, required Supabase roles and all five inventoried tables exist, RLS is enabled, and the two expected public-read policies match the reviewed state.
 2. Revokes all table privileges from `anon` and `authenticated` on `users`, `orders`, `order_items`, `categories`, and `products`.

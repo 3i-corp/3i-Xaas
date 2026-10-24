@@ -1,3 +1,6 @@
+-- Execute as one atomic unit: any post-preflight error rolls back every ACL change.
+BEGIN;
+
 -- P0 security containment for the existing public API surface.
 -- Scope: existing client/PUBLIC grants on the five inventoried application tables
 -- and public sequences; global and public-schema defaults for postgres-created objects.
@@ -145,3 +148,5 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
   REVOKE ALL PRIVILEGES ON SEQUENCES FROM PUBLIC, anon, authenticated;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
   REVOKE ALL PRIVILEGES ON FUNCTIONS FROM PUBLIC, anon, authenticated;
+
+COMMIT;

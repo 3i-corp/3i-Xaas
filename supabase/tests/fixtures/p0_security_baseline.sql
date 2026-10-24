@@ -74,13 +74,28 @@ CREATE POLICY "Public can read categories"
 CREATE POLICY "Public can read published products"
   ON public.products FOR SELECT TO anon, authenticated USING (is_published = true);
 
--- Simulate the risky grants observed in the read-only audit before migration.
+-- Simulate direct and PUBLIC grants observed as potential exposure paths.
 GRANT ALL PRIVILEGES ON TABLE
   public.users, public.categories, public.products, public.orders, public.order_items
-TO anon, authenticated, service_role;
+TO anon, authenticated, service_role, PUBLIC;
 
 CREATE SEQUENCE public.p0_existing_sequence;
-GRANT ALL PRIVILEGES ON SEQUENCE public.p0_existing_sequence TO anon, authenticated, service_role;
+GRANT ALL PRIVILEGES ON SEQUENCE public.p0_existing_sequence TO anon, authenticated, service_role, PUBLIC;
+
+-- Seed both global and schema-specific defaults to ensure the tests catch
+-- additive ACL behavior; keep service_role defaults to test that they survive.
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres
+  GRANT ALL PRIVILEGES ON TABLES TO anon, authenticated, service_role, PUBLIC;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres
+  GRANT ALL PRIVILEGES ON SEQUENCES TO anon, authenticated, service_role, PUBLIC;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres
+  GRANT EXECUTE ON FUNCTIONS TO anon, authenticated, service_role, PUBLIC;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  GRANT ALL PRIVILEGES ON TABLES TO anon, authenticated, service_role, PUBLIC;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  GRANT ALL PRIVILEGES ON SEQUENCES TO anon, authenticated, service_role, PUBLIC;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  GRANT EXECUTE ON FUNCTIONS TO anon, authenticated, service_role, PUBLIC;
 
 INSERT INTO public.users (id, email, password_hash)
 VALUES ('00000000-0000-4000-8000-000000000001', 'p0-fixture@example.invalid', 'not-a-real-hash');

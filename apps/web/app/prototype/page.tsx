@@ -126,15 +126,21 @@ export default function CoreSystemPrototype() {
         <section className="mt-8 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
           <aside className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="px-2 text-sm font-bold text-slate-900">Service modules</h2>
-            <div className="mt-3 space-y-2">
+            <div className="mt-3 space-y-2" role="group" aria-label="Select service">
               {serviceCards.map((service) => (
-                <button key={service.key} onClick={() => setSelected(service.key)} className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${selected === service.key ? "border-indigo-300 bg-indigo-50" : "border-transparent hover:bg-slate-50"}`}>
-                  <span className="h-3 w-3 rounded-full" style={{ backgroundColor: service.color }} />
+                <button
+                  key={service.key}
+                  type="button"
+                  aria-pressed={selected === service.key}
+                  onClick={() => setSelected(service.key)}
+                  className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${selected === service.key ? "border-indigo-300 bg-indigo-50" : "border-transparent hover:bg-slate-50"}`}
+                >
+                  <span className="h-3 w-3 rounded-full" aria-hidden="true" style={{ backgroundColor: service.color }} />
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-semibold">{service.label}</span>
                     <span className="mt-0.5 block text-xs text-slate-500">{service.description}</span>
                   </span>
-                  <span className="text-slate-400">›</span>
+                  <span className="text-slate-400" aria-hidden="true">›</span>
                 </button>
               ))}
             </div>
@@ -149,16 +155,26 @@ export default function CoreSystemPrototype() {
                   <h2 className="mt-1 text-xl font-bold">{serviceNames[selected]}</h2>
                   <p className="mt-1 text-sm text-slate-500">Monthly synthetic scenario · May–October</p>
                 </div>
-                <div className="flex rounded-xl bg-slate-100 p-1">
-                  <button onClick={() => setMetric("activity")} className={`rounded-lg px-3 py-2 text-xs font-semibold ${metric === "activity" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}>Activity</button>
-                  <button onClick={() => setMetric("adoption")} className={`rounded-lg px-3 py-2 text-xs font-semibold ${metric === "adoption" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}>Adoption index</button>
+                <div className="flex rounded-xl bg-slate-100 p-1" role="group" aria-label="Select trend metric">
+                  <button
+                    type="button"
+                    aria-pressed={metric === "activity"}
+                    onClick={() => setMetric("activity")}
+                    className={`rounded-lg px-3 py-2 text-xs font-semibold ${metric === "activity" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}
+                  >Activity</button>
+                  <button
+                    type="button"
+                    aria-pressed={metric === "adoption"}
+                    onClick={() => setMetric("adoption")}
+                    className={`rounded-lg px-3 py-2 text-xs font-semibold ${metric === "adoption" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}
+                  >Adoption index</button>
                 </div>
               </div>
-              <div className="mt-8 grid grid-cols-6 gap-3">
+              <div className="mt-8 grid grid-cols-6 gap-3" role="img" aria-label={`${serviceNames[selected]} synthetic ${metric === "activity" ? "activity counts" : "adoption index percentages"} from May through October`}>
                 {points.map((point) => {
                   const value = point[metric];
                   const height = Math.max(10, (value / max) * 170);
-                  return <div key={point.month} className="flex min-w-0 flex-col items-center justify-end">
+                  return <div key={point.month} className="flex min-w-0 flex-col items-center justify-end" aria-hidden="true">
                     <span className="mb-2 text-[10px] font-semibold text-slate-500 sm:text-xs">{metric === "activity" ? fmt(value) : `${value}%`}</span>
                     <div className="flex h-44 w-full items-end rounded-t-lg bg-slate-50">
                       <div className="w-full rounded-t-lg bg-indigo-600 transition-all" style={{ height: `${height}px` }} />
@@ -180,11 +196,12 @@ export default function CoreSystemPrototype() {
               </div>
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full min-w-[500px] text-left text-sm">
-                  <thead><tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500"><th className="py-3 pr-4 font-semibold">Service</th><th className="py-3 pr-4 font-semibold">Activity</th><th className="py-3 pr-4 font-semibold">Adoption index</th><th className="py-3 font-semibold">Reliability</th></tr></thead>
+                  <caption className="sr-only">October synthetic snapshot for each service</caption>
+                  <thead><tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500"><th scope="col" className="py-3 pr-4 font-semibold">Service</th><th scope="col" className="py-3 pr-4 font-semibold">Activity</th><th scope="col" className="py-3 pr-4 font-semibold">Adoption index</th><th scope="col" className="py-3 font-semibold">Reliability</th></tr></thead>
                   <tbody>{serviceCards.map((service) => {
                     const latest = trends[service.key][5];
                     return <tr key={service.key} className="border-b border-slate-100 last:border-0">
-                      <td className="py-3 pr-4 font-semibold">{service.label}</td>
+                      <th scope="row" className="py-3 pr-4 font-semibold">{service.label}</th>
                       <td className="py-3 pr-4 tabular-nums">{fmt(latest.activity)}</td>
                       <td className="py-3 pr-4 tabular-nums">{latest.adoption}%</td>
                       <td className="py-3 tabular-nums">{latest.reliability.toFixed(1)}%</td>

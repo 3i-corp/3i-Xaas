@@ -168,3 +168,8 @@ This document is a plan only. The following actions have **not** been performed 
 - No production data or schema changes occur during CI.
 - Explicit user approval recorded before executing any live change.
 - Post-change advisor/grant/policy checks and regression tests have a recorded result.
+
+
+## 7. Protected Core policy change gate
+
+Any remediation step that changes or indirectly weakens the six protected Core principles must be classified as a protected scope change and follow [Core Governance — Policy Amendment & Scope Expansion Authorization](./CORE-GOVERNANCE-CHANGE-AUTHORIZATION.md). Normal actor identity/role checks and at least one verified creator-authorization method are both required. A documentation or PR approval is not authorization to change live Supabase; production actions remain a separate approval gate. The governance policy is not considered technically enforced until server-side authorization, PR/environment controls, audit records and negative tests have been implemented and verified.

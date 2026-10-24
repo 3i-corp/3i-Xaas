@@ -79,6 +79,9 @@ GRANT ALL PRIVILEGES ON TABLE
   public.users, public.categories, public.products, public.orders, public.order_items
 TO anon, authenticated, service_role;
 
+CREATE SEQUENCE public.p0_existing_sequence;
+GRANT ALL PRIVILEGES ON SEQUENCE public.p0_existing_sequence TO anon, authenticated, service_role;
+
 INSERT INTO public.users (id, email, password_hash)
 VALUES ('00000000-0000-4000-8000-000000000001', 'p0-fixture@example.invalid', 'not-a-real-hash');
 

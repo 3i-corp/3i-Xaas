@@ -62,6 +62,7 @@ expect_denied() {
 
 for role in anon authenticated; do
   expect_denied "$role" "SELECT public.users" "SELECT * FROM public.users;"
+  expect_denied "$role" "SELECT protected users.email column" "SELECT email FROM public.users;"
   expect_denied "$role" "SELECT public.orders" "SELECT * FROM public.orders;"
   expect_denied "$role" "SELECT public.order_items" "SELECT * FROM public.order_items;"
   expect_denied "$role" "INSERT public.users" "INSERT INTO public.users (id, email) VALUES (gen_random_uuid(), 'p0-negative@example.invalid');"
@@ -88,6 +89,22 @@ if ! grep -Fq 'Unexpected SELECT/ALL policy set for products' "$output"; then
 fi
 rm -f "$output"
 run_psql -c 'DROP POLICY "P0 unexpected permissive products" ON public.products;'
-echo "PASS policy drift rejected before privilege changes."
+run_psql -c 'CREATE POLICY "P0 unexpected ALL products" ON public.products FOR ALL TO anon USING (true) WITH CHECK (true);'
+output="$(mktemp)"
+if run_psql < "$MIGRATION_FILE" >"$output" 2>&1; then
+  echo "::error::Migration unexpectedly accepted an additional products ALL policy." >&2
+  cat "$output" >&2
+  rm -f "$output"
+  exit 1
+fi
+if ! grep -Fq 'Unexpected SELECT/ALL policy set for products' "$output"; then
+  echo "::error::Migration failed for an unexpected reason during ALL-policy drift probe." >&2
+  cat "$output" >&2
+  rm -f "$output"
+  exit 1
+fi
+rm -f "$output"
+run_psql -c 'DROP POLICY "P0 unexpected ALL products" ON public.products;'
+echo "PASS SELECT and ALL policy drift rejected before privilege changes."
 
 echo "PASS P0 security migration and negative privilege tests on the disposable local Supabase database."

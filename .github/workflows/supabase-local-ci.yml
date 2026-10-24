@@ -75,7 +75,16 @@ jobs:
       # 5. Start the local Supabase stack (Docker is available on GitHub-hosted Ubuntu runners)
       - name: Start Supabase locally
         if: steps.integration.outputs.run_tests == 'true'
-        run: supabase start
+        shell: bash
+        run: |
+          set -euo pipefail
+          start_log="$RUNNER_TEMP/supabase-start.log"
+          if ! supabase start >"$start_log" 2>&1; then
+            # Do not print CLI startup output: it can contain ephemeral local credentials.
+            echo "::error::Supabase local stack failed to start; startup output was suppressed to avoid exposing generated credentials."
+            exit 1
+          fi
+          rm -f "$start_log"
 
       # This test resets only the explicitly named local CI database fixture.
       # It does not use remote project credentials or deploy anything.

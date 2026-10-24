@@ -78,6 +78,8 @@ CREATE POLICY "Public can read published products"
 GRANT ALL PRIVILEGES ON TABLE
   public.users, public.categories, public.products, public.orders, public.order_items
 TO anon, authenticated, service_role, PUBLIC;
+-- Simulate column-level grants that relation-level REVOKE alone would leave behind.
+GRANT SELECT (email) ON TABLE public.users TO anon, authenticated, PUBLIC;
 
 CREATE SEQUENCE public.p0_existing_sequence;
 GRANT ALL PRIVILEGES ON SEQUENCE public.p0_existing_sequence TO anon, authenticated, service_role, PUBLIC;

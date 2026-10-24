@@ -26,7 +26,7 @@
 
 ## 3. P0 proposal handling
 
-The least-privilege SQL under `supabase/proposals/` is a proposal, not an active migration.
+The least-privilege SQL under `supabase/proposals/` is a proposal, not an active migration. Reviewers and operators must use [PR #9](https://github.com/joofjang2539-hash/3i-XaaS/pull/9) and its exact [P0 SQL proposal](https://github.com/joofjang2539-hash/3i-XaaS/blob/security/p0-restrict-public-api-grants/supabase/proposals/p0_restrict_public_api_grants.sql); do not treat it as approved or active until the required gates pass.
 
 Before it can be considered for application:
 1. Reconcile the current live schema and migration history with the repository.

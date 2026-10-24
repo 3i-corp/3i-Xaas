@@ -102,9 +102,9 @@ export default function CoreSystemPrototype() {
 
         <section className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">Illustrative activity · October</p>
-            <p className="mt-2 text-3xl font-bold">{fmt(Object.values(trends).reduce((sum, data) => sum + data[data.length - 1].activity, 0))}</p>
-            <p className="mt-2 text-xs text-slate-500">Scenario units across five services</p>
+            <p className="text-sm text-slate-500">Selected service · October activity</p>
+            <p className="mt-2 text-3xl font-bold">{fmt(current.activity)}</p>
+            <p className="mt-2 text-xs text-slate-500">{serviceNames[selected]} · synthetic service-specific units</p>
           </article>
           <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-500">Service surfaces</p>

@@ -17,6 +17,12 @@ BEGIN
       END LOOP;
     END LOOP;
 
+    FOREACH privilege_name IN ARRAY ARRAY['USAGE', 'SELECT', 'UPDATE'] LOOP
+      IF has_sequence_privilege(role_name, 'public.p0_existing_sequence', privilege_name) THEN
+        RAISE EXCEPTION 'FAIL: role % still has % on existing public sequence', role_name, privilege_name;
+      END IF;
+    END LOOP;
+
     FOREACH table_name IN ARRAY read_tables LOOP
       IF NOT has_table_privilege(role_name, format('public.%I', table_name), 'SELECT') THEN
         RAISE EXCEPTION 'FAIL: role % lost required SELECT on public.%', role_name, table_name;
@@ -30,7 +36,8 @@ BEGIN
   END LOOP;
 
   IF NOT has_table_privilege('service_role', 'public.users', 'INSERT')
-     OR NOT has_table_privilege('service_role', 'public.orders', 'DELETE') THEN
+     OR NOT has_table_privilege('service_role', 'public.orders', 'DELETE')
+     OR NOT has_sequence_privilege('service_role', 'public.p0_existing_sequence', 'USAGE') THEN
     RAISE EXCEPTION 'FAIL: P0 unexpectedly removed existing service_role grants';
   END IF;
 END
@@ -101,6 +108,7 @@ END
 $assert_default_privileges$;
 
 DROP FUNCTION public.__p0_default_acl_function();
+DROP SEQUENCE public.p0_existing_sequence;
 DROP SEQUENCE public.__p0_default_acl_sequence;
 DROP TABLE public.__p0_default_acl_table;
 

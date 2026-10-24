@@ -51,7 +51,42 @@ Keep verified work reusable and stable while preserving the ability to extend or
 - Supabase-managed `supabase_admin` default ACLs and platform-owned objects require special handling; do not attempt unsupported changes to platform-managed defaults.
 - See [Supabase Access-Control and Production Change Policy](../security/SUPABASE-ACCESS-CONTROL-AND-PRODUCTION-CHANGE-POLICY.md) and [Release Gates and Acceptance Criteria](RELEASE-GATES-AND-ACCEPTANCE.md) for operational checklists.
 
-## 6. Evidence ledger (2026-10-24; CI rechecked)
+## 6. Controlled Bypass — minimum-necessary exception policy
+
+A **Bypass** is a time-limited, narrowly scoped exception to a non-critical process/evidence requirement; it is not a way to declare an unmet gate PASS. This section is a proposal and becomes effective only after independent review and merge.
+
+### Eligible for consideration
+- A criterion is genuinely not applicable to the artifact or change (record `N/A`, rationale, and reviewer).
+- A manual check is temporarily blocked by a documented device/tool/environment limitation, while safe equivalent evidence is available.
+- A low-risk, non-production workflow needs a temporary procedural shortcut that does not weaken authorization, data isolation, auditability, recovery, or security controls.
+- A non-critical evidence item can be deferred with an owner, due date, compensating control, and explicit acceptance of residual risk.
+
+### Never bypass
+- Phase restrictions, including the III Wallet Phase 0 prohibition on Production schema changes.
+- Independent review/sign-off when a gate explicitly requires it; the requester cannot approve their own exception.
+- Authentication/authorization, RLS/access boundaries, secrets protection, tenant isolation, ledger integrity, data-loss prevention, recovery safeguards, or controls needed to prevent unauthorized exposure or money movement.
+- Required acceptance of the Core System Product Prototype before live module/data activation.
+- III Wallet readiness, system-wide readiness, explicit release approval, or any other mandatory production activation/Go-Live gate.
+- Missing or failing CI for a change whose safety depends on those checks; use a safe environment or remain blocked instead.
+
+### Required exception record
+1. Requester and timestamp.
+2. Technical/business justification, blocker, impact of waiting, and why the normal path is infeasible.
+3. Exact criterion(s), artifact/commit, environment, and scope included; explicit exclusions.
+4. Risk/impact assessment and compensating controls, with verification method and pass/fail criteria.
+5. Evidence links, known limitations, accountable owner, remediation due date, and expiry date/time.
+6. Named independent decision-maker and explicit `APPROVE`, `REJECT`, or `NEEDS CHANGES` decision with conditions.
+7. Audit trail and a follow-up check that the bypass expired or was retired after the normal criterion passed.
+
+### Decision semantics
+- The smallest sufficient exception must be preferred; unrelated criteria remain fully enforced.
+- `N/A` is allowed only when a reviewer confirms the criterion truly does not apply; it is not a substitute for missing evidence.
+- An approved deferral records `DEFERRED` or `IN REVIEW`, never `PASS`, until the underlying acceptance criterion is satisfied or the gate's published criteria explicitly allow an independently reviewed alternative.
+- Approval applies only to the recorded scope and expiry. Scope drift, expired approval, changed assumptions, failed compensating controls, or increased risk automatically suspends the exception.
+- Request submission, a PR merge, CI success, or this policy alone is not approval. If no authorized independent decision-maker is available, the request remains pending.
+- Bypass approval does not authorize Production changes, real data, module activation, payment/wallet operations, deployment, or Go-Live unless those actions separately pass every applicable gate and have explicit release authorization.
+
+## 7. Evidence ledger (2026-10-24; CI rechecked)
 
 | Item | Status | Evidence and boundary |
 |---|---|---|
@@ -62,7 +97,7 @@ Keep verified work reusable and stable while preserving the ability to extend or
 | Production module activation / full release | BLOCKED BY PROJECT GATES | Prototype gate first; full production service only after III Wallet completion, required tests, readiness review, and explicit release approval. |
 | Repository policy in this document | PROPOSED | Not official until approved and merged. |
 
-## 7. Review/update protocol
+## 8. Review/update protocol
 
 When updating a locked baseline, include prior baseline/commit, reason for change, changed scope, new test evidence, compatibility/security impact, recovery approach, and deferred issues. Preserve prior evidence rather than silently overwriting history.
 

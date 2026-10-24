@@ -6,7 +6,7 @@
 
 ## 1. Purpose
 
-Keep verified work reusable and stable while preserving the ability to extend or revise it safely. A baseline lock records a known-good state; it does not make code immutable, certify production readiness, or authorize deployment.
+Keep verified work reusable and stable while preserving the ability to extend or revise it safely. A baseline lock records a known-good state; it does not make code immutable, certify production readiness, or authorize module activation.
 
 ## 2. Baseline states
 
@@ -33,25 +33,32 @@ Keep verified work reusable and stable while preserving the ability to extend or
 4. Do not delay independent work because of an unrelated environment blocker.
 5. Re-lock only after the relevant acceptance checks pass and the evidence is updated.
 
-## 5. Safe testing and release boundaries
+## 5. Safe testing, production changes, and release boundaries
 
 - Synthetic/mock data and disposable local databases are allowed when useful; label them and keep them separate from live data.
 - Use feature branches and pull requests. Do not push directly to `main`.
-- No production SQL, live-data mutation, merge, or deployment without a separate explicit approval after reporting the scope, evidence, risks, and rollback plan.
+- **Standing production-change authorization (user-approved 2026-10-24):** Once the specific change has a **LOCKED / passed Baseline** and its evidence is recorded, the team may carry out the corresponding narrowly scoped Supabase Production database/schema/permission change as part of that phase, when doing it then is demonstrably safer and avoids duplicate work. This is authorization to perform necessary production changes for a passed baseline; it is **not** permission to activate a module, expose production data, launch a service, or bypass project release gates.
+- Before each production change, record the exact project/environment, baseline commit, proposed SQL or change set, current-state/drift checks, impact and compatibility analysis, backup/recovery evidence, rollback or forward-recovery plan, and post-change verification. Execute only the reviewed scope, then capture the result. Stop if actual state differs from the reviewed assumptions or if the change could cause data loss, broaden access unexpectedly, or activate a service prematurely; report the discrepancy before proceeding.
+- Production changes must remain additive and compatibility-aware where possible. Do not convert a proposal into an active migration until the schema baseline and migration history are reconciled. A passing CI test alone is not evidence that live schema assumptions are current.
+- No live module/data activation or public service launch before the **Core System Product Prototype** gate is met.
+- **Full production service remains blocked until III Wallet is complete, passes required functional/security/integration/recovery tests, and is assessed ready to serve**, followed by a system-wide readiness review and explicit release approval. A Baseline Lock or a database change does not satisfy this gate.
 - Secrets must never be committed or copied into logs or reports.
-- Database changes must be additive and compatibility-aware where possible. Do not convert a proposal into an active migration until the schema baseline and migration history are reconciled.
 - A rollback plan must distinguish code rollback from database/data rollback; do not assume reverting a commit reverses data changes.
+- Supabase-managed `supabase_admin` default ACLs and platform-owned objects require special handling; do not attempt unsupported changes to platform-managed defaults.
 
 ## 6. Initial evidence ledger (2026-10-24)
 
 | Item | Status | Evidence and boundary |
 |---|---|---|
 | P0 least-privilege grants proposal | IN REVIEW | PR #9: https://github.com/joofjang2539-hash/3i-XaaS/pull/9 |
-| P0 synthetic Supabase-local CI test | Test run passed | Workflow run: https://github.com/joofjang2539-hash/3i-XaaS/actions/runs/40043391104. This validates the disposable CI test scope only. |
+| P0 synthetic Supabase-local CI test (prior revision) | Test run passed | Workflow run: https://github.com/joofjang2539-hash/3i-XaaS/actions/runs/40043391104. This validates the disposable CI test scope only; it predates later hardening. |
+| Latest P0 hardening CI | IN PROGRESS at time of record | Workflow run: https://github.com/joofjang2539-hash/3i-XaaS/actions/runs/40045891394. Do not mark the revised baseline locked until it completes successfully and review findings are checked. |
 | Live Supabase grants/schema mutation | NOT PERFORMED | Proposal has not been applied to the real Supabase project. |
-| Production merge/deployment of P0 | NOT AUTHORIZED / NOT PERFORMED | Requires a separate review and explicit approval. |
+| Production module activation / full release | BLOCKED BY PROJECT GATES | Prototype gate first; full production service only after III Wallet completion, tests, and readiness review. |
 | Repository policy in this document | PROPOSED | Must be reviewed and merged before it is an official repository policy. |
 
 ## 7. Review/update protocol
 
 When updating a locked baseline, include: prior baseline/commit, reason for change, changed scope, new test evidence, compatibility/security impact, rollback approach, and any remaining deferred issues. Preserve the prior evidence rather than silently overwriting history.
+
+For an authorized production change, record a separate change entry linked to the passed baseline, the exact reviewed SQL/change set, execution time and operator, verification results, and any follow-up issue. If post-change verification fails, stop further rollout, use the reviewed recovery plan, and report the result before proceeding.

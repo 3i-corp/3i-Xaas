@@ -44,6 +44,7 @@ BEGIN
 END
 $assert_unchanged$;
 SQL
+}
 
 expect_policy_drift_rejected() {
   local table_name="$1"

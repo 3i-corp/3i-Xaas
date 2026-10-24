@@ -28,17 +28,35 @@ All contracts below describe hand-authored scenario values, not observed service
 | Adoption index — each service | Illustrative proportion/index used to demonstrate a trend view; numerator and denominator are not yet specified | Scenario percentage (0–100) | Calendar month | Respective service owner — TBD | Hand-authored in-code scenario assumptions | Static prototype values; no refresh pipeline | No agreed calculation or denominator; not a real adoption KPI |
 | Reliability — each service | Illustrative monthly reliability indicator shown in the service snapshot | Scenario percentage | Calendar month | Respective service/SRE owner — TBD | Hand-authored in-code scenario assumptions | Static prototype values; no monitoring source | Not calculated from uptime/error events and not SLO evidence |
 
-The contracts make missing accountability and definitions visible; the TBD owner assignments, adoption-index calculation, and operational metric sources must be agreed before Gate 2 can pass.
+## Gate 2 acceptance matrix (current status)
+
+| # | Acceptance criterion | Evidence in this PR | Status |
+|---|---|---|---|
+| 1 | Versioned, reviewable prototype PR | This PR and the `/prototype` route | EVIDENCED |
+| 2 | Agreed service surfaces and key user/operator journeys | Five service surfaces and service/metric selection are present. End-to-end cross-service journeys have not been agreed or demonstrated. | PARTIAL — BLOCKING |
+| 3 | Every metric has definition, unit, aggregation window, owner, provenance, freshness, limitations | Definitions, units, monthly window, provenance, freshness and limitations are documented. Owners remain TBD; adoption-index numerator/denominator is undefined. | PARTIAL — BLOCKING |
+| 4 | Synthetic values isolated from production credentials/APIs/DB | Hand-authored values only; code has no Supabase/API integration and displays a synthetic-data warning | EVIDENCED BY CODE REVIEW; CI still required |
+| 5 | Primary workflows, responsive behavior and accessibility basics reviewed | Service and metric controls; responsive Tailwind layouts; selected states use `aria-pressed`, chart has an accessible label, table has caption and scoped headers. No human responsive/keyboard/screen-reader review record yet. | PARTIAL — REVIEW EVIDENCE REQUIRED |
+| 6 | Automated checks/build pass | Must cite CI run for exact current head; earlier Run #43 only validates `c333beb` | PENDING CURRENT-HEAD CI |
+| 7 | Security/privacy boundaries and known gaps documented | Synthetic-only boundary, no live integrations, non-operational metric limitations, and outstanding data-calibration caveat documented | EVIDENCED |
+| 8 | Independent reviewer explicitly accepts all criteria | No independent acceptance record yet | BLOCKED |
+
+### Adoption index proposal — not yet approved
+For prototype semantics only, a possible future definition is: monthly distinct eligible active entities completing a named service-specific key action divided by monthly distinct eligible entities for that service, multiplied by 100. The eligible population, key action, exclusions, identity resolution, privacy thresholds, and owner must be agreed separately for each service. This proposal is **not** the calculation used to generate the hand-authored values and must not be represented as an approved KPI.
+
+The matrix intentionally distinguishes code/document evidence from human acceptance. Do not mark Gate 2 accepted until blocking rows have evidence and an independent reviewer records an explicit decision against all eight criteria.
 
 ## Prototype workflows and review scope
-
-Currently demonstrated: select one of five service surfaces, switch between Activity and Adoption index, inspect the six monthly synthetic points, and compare the per-service October snapshot. The prototype does not yet demonstrate full end-to-end user/operator journeys across service boundaries, and no reviewer record confirming responsive behavior, keyboard/accessibility checks, or explicit acceptance against all eight Gate 2 criteria is present.
+Currently demonstrated: select one of five service surfaces, switch between Activity and Adoption index, inspect the six monthly synthetic points, and compare the per-service October snapshot. The prototype does not yet demonstrate full end-to-end user/operator journeys across service boundaries. The responsive and accessibility changes are implementation measures, not a substitute for a documented manual review.
 
 ## Intended next steps
-1. Approve a metric contract per service (definition, owner, unit, aggregation, source, freshness and access boundary).
-2. Gather permitted, anonymized aggregate reference data per service and record provenance before calibrating synthetic curves.
-3. Validate totals, time windows, missingness, duplicate events, and cross-service comparability.
-4. Keep all production data and module activation blocked until the project’s release gates are met.
+1. Agree named accountable metric owners and service-specific metric contracts.
+2. Agree and implement the adoption-index calculation only after its denominator and key action are approved.
+3. Review and record primary cross-service user/operator journeys.
+4. Perform and record responsive, keyboard-only, and screen-reader checks on supported viewport sizes.
+5. Gather permitted, anonymized aggregate reference data per service and record provenance before calibrating synthetic curves.
+6. Validate totals, time windows, missingness, duplicate events, and cross-service comparability.
+7. Keep all production data and module activation blocked until the project’s release gates are met.
 
 ## Governance
 This prototype does not satisfy Baseline Lock by itself and does not authorize production activation.

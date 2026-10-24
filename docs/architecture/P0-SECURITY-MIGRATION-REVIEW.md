@@ -25,7 +25,7 @@ The read-only audit observed PostgreSQL 17 on the connected Supabase project. Th
 
 Before changing grants, the SQL requires the expected roles, all five tables, and RLS to exist. For both `categories` and `products`, it also requires the exact expected SELECT policy and rejects any additional SELECT/ALL policy. This strict check is intentional: PostgreSQL combines applicable permissive policies with OR, so an extra permissive policy could weaken the intended published-product filter.
 
-The migration revokes table privileges from `PUBLIC`, `anon`, and `authenticated`, then grants SELECT only on categories and products to the two client roles. It also revokes existing sequence privileges from those principals.
+The migration revokes column-level and relation-level table privileges from `PUBLIC`, `anon`, and `authenticated`, then grants SELECT only on categories and products to the two client roles. It also revokes existing sequence privileges from those principals.
 
 ## 3. Global and schema-specific default privileges
 
@@ -48,16 +48,16 @@ References: [Supabase — Can't change the default privileges of supabase_admin 
 The test runner refuses to run unless `P0_TEST_ALLOW_RESET=1` is set and the exact local container `supabase_db_3i-xaas-local` is running. It never connects to a remote project. The fixture is destructive to that disposable local database only.
 
 The synthetic fixture now seeds:
-1. Direct grants to client roles and `PUBLIC` on the five application tables and a sequence.
+1. Direct relation-level grants to client roles and `PUBLIC` on the five application tables, a separate column-level grant on `users.email`, and grants on a sequence.
 2. Broad global and `public`-schema default ACLs for tables, sequences, and functions, including grants to `PUBLIC`.
 3. Synthetic rows and only the two expected public-read policies.
 
 CI then applies the proposal and checks:
-- No effective client-role access to protected tables or existing sequences.
+- No effective client-role access to protected tables, a separately granted protected column, or existing sequences.
 - SELECT-only access to categories and the published product row.
 - Future tables, sequences, and functions created by `postgres` do not grant privileges to `anon` or `authenticated`, while the fixture's `service_role` defaults remain.
 - Negative operations against protected tables are denied.
-- An injected extra permissive products policy makes the proposal fail closed before privilege changes.
+- Injected extra permissive products SELECT and ALL policies each make the proposal fail closed before privilege changes.
 
 The SQL remains an unsequenced proposal and is not an active migration. The local CI result is evidence for this synthetic fixture only, not proof that the live Supabase ACLs or application flows are safe.
 

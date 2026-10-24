@@ -45,6 +45,7 @@ BEGIN
     WHERE schemaname = 'public'
       AND tablename = 'categories'
       AND policyname = 'Public can read categories'
+      AND permissive = 'PERMISSIVE'
       AND cmd = 'SELECT'
       AND roles @> ARRAY['anon', 'authenticated']::name[]
       AND qual = 'true'

@@ -52,12 +52,12 @@ The synthetic fixture now seeds:
 2. Broad global and `public`-schema default ACLs for tables, sequences, and functions, including grants to `PUBLIC`.
 3. Synthetic rows and only the two expected public-read policies.
 
-CI then applies the proposal and checks:
+Before applying the proposal, CI injects unexpected SELECT and ALL policies on both `categories` and `products`. Each attempt must fail with the expected preflight error and assert that seeded table/column grants remain unchanged, proving the preflight rejects drift before any grant change. CI then applies the proposal to the clean synthetic fixture and checks:
 - No effective client-role access to protected tables, a separately granted protected column, or existing sequences.
 - SELECT-only access to categories and the published product row.
 - Future tables, sequences, and functions created by `postgres` do not grant privileges to `anon` or `authenticated`, while the fixture's `service_role` defaults remain.
 - Negative operations against protected tables are denied.
-- Injected extra permissive products SELECT and ALL policies each make the proposal fail closed before privilege changes.
+- Injected extra permissive categories/products SELECT and ALL policies each make the proposal fail closed before privilege changes, with seeded grants asserted unchanged.
 
 The SQL remains an unsequenced proposal and is not an active migration. The local CI result is evidence for this synthetic fixture only, not proof that the live Supabase ACLs or application flows are safe.
 
@@ -68,7 +68,7 @@ The SQL remains an unsequenced proposal and is not an active migration. The loca
 - Re-read the current grants, global and schema-specific default ACLs, policy definitions, table ownership, and migration history.
 - Confirm a recoverable schema/metadata export and identify the exact operator and environment.
 - Test this proposal and dependent application flows in an isolated environment.
-- Obtain separate approval for the exact project, SQL change, timing, and post-change checks.
+- Apply the user's standing authorization only after the relevant Baseline is locked/passed, and only for the exact reviewed, narrowly scoped change. Re-confirm approval only if scope expands, assumptions differ, recovery is inadequate, or a material risk remains unresolved.
 
 ### If a local test fails
 
@@ -88,4 +88,4 @@ The SQL remains an unsequenced proposal and is not an active migration. The loca
 
 - This PR is for review and local CI only.
 - No production migration, data mutation, secret change, merge, or deployment is authorized by this document.
-- Before any future live application, report actual CI results, reviewed SQL, current drift, migration-history reconciliation, recovery evidence, global default-ACL impact, and residual `supabase_admin` risk; then obtain separate explicit approval.
+- Before any future live application, report actual CI results, reviewed SQL, current drift, migration-history reconciliation, recovery evidence, global default-ACL impact, and residual `supabase_admin` risk. The user's standing authorization applies only after the relevant Baseline is locked/passed and only while the reviewed scope and safety conditions remain true; stop and report any mismatch.

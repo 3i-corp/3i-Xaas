@@ -70,7 +70,7 @@ END
 $assert_authenticated_public_reads$;
 RESET ROLE;
 
--- Probe default privileges for objects created by postgres after the migration.
+-- Probe defaults for new objects created by postgres after the migration.
 CREATE TABLE public.__p0_default_acl_table (id integer);
 CREATE SEQUENCE public.__p0_default_acl_sequence;
 CREATE FUNCTION public.__p0_default_acl_function() RETURNS integer
@@ -84,7 +84,7 @@ BEGIN
   FOREACH role_name IN ARRAY ARRAY['anon', 'authenticated'] LOOP
     FOREACH privilege_name IN ARRAY ARRAY['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER', 'MAINTAIN'] LOOP
       IF has_table_privilege(role_name, 'public.__p0_default_acl_table', privilege_name) THEN
-        RAISE EXCEPTION 'FAIL: future table default gives % privilege % to %', privilege_name, role_name, role_name;
+        RAISE EXCEPTION 'FAIL: future table default gives % privilege to %', privilege_name, role_name;
       END IF;
     END LOOP;
 
@@ -112,4 +112,4 @@ DROP SEQUENCE public.p0_existing_sequence;
 DROP SEQUENCE public.__p0_default_acl_sequence;
 DROP TABLE public.__p0_default_acl_table;
 
-SELECT 'PASS: existing grants, negative privilege assertions, public-read RLS behavior, and postgres-owned default privileges' AS p0_result;
+SELECT 'PASS: existing grants, PUBLIC inheritance, public-read RLS behavior, and global/schema-specific postgres defaults' AS p0_result;

@@ -81,6 +81,35 @@ expect_policy_drift_rejected "categories" "P0 unexpected permissive categories S
 expect_policy_drift_rejected "categories" "P0 unexpected permissive categories ALL" \
   'CREATE POLICY "P0 unexpected permissive categories ALL" ON public.categories FOR ALL TO anon USING (true) WITH CHECK (true);'
 
+echo "P0 security test: inject a post-preflight failure and verify transaction rollback."
+faulty_migration="$(mktemp)"
+python3 - "$MIGRATION_FILE" "$faulty_migration" <<'PY'
+from pathlib import Path
+import sys
+source = Path(sys.argv[1]).read_text()
+needle = "FROM PUBLIC, anon, authenticated;\n\n-- Categories"
+replacement = "FROM PUBLIC, anon, authenticated;\n\nSELECT 1 / 0; -- injected failure for rollback test\n\n-- Categories"
+if source.count(needle) != 1:
+    raise SystemExit("Could not identify the exact post-revoke injection point")
+Path(sys.argv[2]).write_text(source.replace(needle, replacement))
+PY
+fault_output="$(mktemp)"
+if run_psql < "$faulty_migration" >"$fault_output" 2>&1; then
+  echo "::error::Injected post-preflight failure unexpectedly succeeded." >&2
+  cat "$fault_output" >&2
+  rm -f "$faulty_migration" "$fault_output"
+  exit 1
+fi
+if ! grep -Eiq 'division by zero' "$fault_output"; then
+  echo "::error::Injected rollback probe failed for an unexpected reason." >&2
+  cat "$fault_output" >&2
+  rm -f "$faulty_migration" "$fault_output"
+  exit 1
+fi
+rm -f "$faulty_migration" "$fault_output"
+assert_preflight_left_grants_unchanged
+echo "PASS transaction rollback: post-preflight failure leaves fixture grants unchanged"
+
 echo "P0 security test: applying the exact migration file to the clean synthetic fixture (not recording migration history)."
 run_psql < "$MIGRATION_FILE"
 

@@ -1,7 +1,7 @@
 -- P0 security containment for the existing public API surface.
--- Scope: only anon/authenticated grants on the five inventoried application tables,
--- public sequences, and future objects created by postgres. Does not change data,
--- RLS policies, service_role grants, or existing function EXECUTE grants.
+-- Scope: existing client/PUBLIC grants on the five inventoried application tables
+-- and public sequences; global and public-schema defaults for postgres-created objects.
+-- Does not change data, RLS policies, service_role grants, or existing function EXECUTE grants.
 -- IMPORTANT: Supabase-managed supabase_admin default ACLs cannot be altered by
 -- application migrations. See docs/architecture/P0-SECURITY-MIGRATION-REVIEW.md.
 
@@ -40,7 +40,15 @@ BEGIN
     RAISE EXCEPTION 'P0 migration expects RLS enabled on all five inventoried application tables';
   END IF;
 
-  IF NOT EXISTS (
+  -- Fail closed if any additional SELECT/ALL policy exists on categories or
+  -- products. PostgreSQL combines applicable permissive policies with OR.
+  IF (
+    SELECT count(*) FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'categories'
+      AND cmd IN ('SELECT', 'ALL')
+  ) <> 1
+  OR NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public'
       AND tablename = 'categories'
@@ -48,12 +56,19 @@ BEGIN
       AND permissive = 'PERMISSIVE'
       AND cmd = 'SELECT'
       AND roles @> ARRAY['anon', 'authenticated']::name[]
+      AND roles <@ ARRAY['anon', 'authenticated']::name[]
       AND qual = 'true'
   ) THEN
-    RAISE EXCEPTION 'Expected public SELECT policy for categories is missing or changed; review policy drift before proceeding';
+    RAISE EXCEPTION 'Unexpected SELECT/ALL policy set for categories; review policy drift before proceeding';
   END IF;
 
-  IF NOT EXISTS (
+  IF (
+    SELECT count(*) FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'products'
+      AND cmd IN ('SELECT', 'ALL')
+  ) <> 1
+  OR NOT EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname = 'public'
       AND tablename = 'products'
@@ -61,42 +76,46 @@ BEGIN
       AND permissive = 'PERMISSIVE'
       AND cmd = 'SELECT'
       AND roles @> ARRAY['anon', 'authenticated']::name[]
+      AND roles <@ ARRAY['anon', 'authenticated']::name[]
       AND qual = '(is_published = true)'
   ) THEN
-    RAISE EXCEPTION 'Expected published-products SELECT policy is missing or changed; review policy drift before proceeding';
+    RAISE EXCEPTION 'Unexpected SELECT/ALL policy set for products; review policy drift before proceeding';
   END IF;
 END
 $preflight$;
 
--- Remove existing API-role privileges from protected application tables.
--- Categories and products remain intentionally readable through SELECT + their
--- existing RLS policies only. No application data or policy is changed.
+-- Remove direct and PUBLIC privileges. PUBLIC grants are inherited by client
+-- roles, so revoking only from anon/authenticated is not sufficient.
 REVOKE ALL PRIVILEGES ON TABLE
   public.users,
   public.orders,
   public.order_items,
   public.categories,
   public.products
-FROM anon, authenticated;
+FROM PUBLIC, anon, authenticated;
 
+-- Categories and products remain intentionally readable through SELECT + their
+-- exact preflight-verified RLS policies only.
 GRANT SELECT ON TABLE public.categories, public.products TO anon, authenticated;
 
 -- Existing sequences are not part of the public client API. Preserve service_role.
-REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM anon, authenticated;
+REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM PUBLIC, anon, authenticated;
 
--- Future objects created by postgres must be private by default. Grant access
--- explicitly in the migration that creates each API-facing object.
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
-  REVOKE ALL PRIVILEGES ON TABLES FROM anon, authenticated;
-
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
-  REVOKE ALL PRIVILEGES ON SEQUENCES FROM anon, authenticated;
-
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
-  REVOKE ALL PRIVILEGES ON FUNCTIONS FROM anon, authenticated;
-
--- PostgreSQL's default PUBLIC EXECUTE is global; a schema-scoped REVOKE cannot
--- remove it. Functions that need to be called by an API role must be explicitly
--- granted in the migration that defines them.
+-- Global defaults are revoked because PostgreSQL combines global defaults with
+-- schema-specific defaults; a schema-scoped REVOKE cannot cancel a global grant.
+-- This affects future objects created by postgres across schemas, by design.
+-- API-facing access must be granted explicitly in the migration defining the object.
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres
-  REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
+  REVOKE ALL PRIVILEGES ON TABLES FROM PUBLIC, anon, authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres
+  REVOKE ALL PRIVILEGES ON SEQUENCES FROM PUBLIC, anon, authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres
+  REVOKE ALL PRIVILEGES ON FUNCTIONS FROM PUBLIC, anon, authenticated;
+
+-- Also clear any existing public-schema-specific defaults, which are additive.
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  REVOKE ALL PRIVILEGES ON TABLES FROM PUBLIC, anon, authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  REVOKE ALL PRIVILEGES ON SEQUENCES FROM PUBLIC, anon, authenticated;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  REVOKE ALL PRIVILEGES ON FUNCTIONS FROM PUBLIC, anon, authenticated;

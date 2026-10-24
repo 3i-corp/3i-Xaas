@@ -64,6 +64,19 @@ Required:
 
 Exit: explicit release approval. Only the approved scope may be activated.
 
+## Independent review is a merge prerequisite
+
+For this repository's governance, security, access-control, data/migration, release-gate, and exception-policy changes, **do not merge until a qualified reviewer who is not the PR author has reviewed the exact current head and submitted an explicit GitHub `APPROVE`**. A comment-only review, CI success, automated/Codex review, PR author self-approval, or approval of an outdated commit is not a substitute. Resolve or explicitly disposition material findings before merge; if a new commit changes the reviewed diff, obtain a fresh approval for that head.
+
+The reviewer must have sufficient repository permissions for the approval to count under GitHub's repository rules. If no qualified independent reviewer is identified or available, leave the PR open and record the state as `IN REVIEW`; do not invent a reviewer identity or self-approve.
+
+Repository administrators should enforce this technically on `main` using GitHub branch protection or a ruleset: require pull requests, at least one approving review, dismiss stale approvals when new commits are pushed, require approval of the most recent reviewable push by someone other than its pusher, and block bypass of these requirements except for a separately documented, authorized emergency process. Where maintainers are available, require CODEOWNERS review for governance/security paths. The repository's current settings must be inspected and verified by an administrator; this policy text alone does not prove that settings are enabled.
+
+Authoritative references:
+- GitHub Docs — [About protected branches](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
+- GitHub Docs — [About CODEOWNERS](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners)
+- GitHub Docs — [Pull request reviews](https://docs.github.com/en/pull-requests/reference/pull-request-reviews)
+
 ## Controlled exception path — minimum necessary scope
 
 A temporary exception may be considered only for a non-critical process or evidence requirement. An exception never turns an unmet mandatory gate into PASS.
@@ -85,6 +98,7 @@ Stop and report instead of proceeding if:
 - A phase restriction conflicts with the proposed action.
 - Recovery is untested or expected impact is unclear.
 - A proposed action could expose data, broaden access unexpectedly, cause data loss, or activate a service prematurely.
+- The required independent approval for the exact current PR head is missing.
 
 ## Evidence record template
 

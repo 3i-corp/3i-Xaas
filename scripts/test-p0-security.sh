@@ -33,16 +33,17 @@ echo "P0 security test: preparing a disposable local-only fixture."
 run_psql < "$FIXTURE_FILE"
 
 assert_preflight_left_grants_unchanged() {
-  run_psql -c 'DO $assert_unchanged$
-  BEGIN
-    IF NOT has_table_privilege('"'anon'"', '"'public.users'"', '"'SELECT'"')
-       OR NOT has_column_privilege('"'anon'"', '"'public.users'"', '"'email'"', '"'SELECT'"')
-       OR NOT has_table_privilege('"'authenticated'"', '"'public.orders'"', '"'INSERT'"') THEN
-      RAISE EXCEPTION 'FAIL: rejected preflight changed fixture grants before authorization checks completed';
-    END IF;
-  END
-  $assert_unchanged$;'
-}
+  run_psql <<'SQL'
+DO $assert_unchanged$
+BEGIN
+  IF NOT has_table_privilege('anon', 'public.users', 'SELECT')
+     OR NOT has_column_privilege('anon', 'public.users', 'email', 'SELECT')
+     OR NOT has_table_privilege('authenticated', 'public.orders', 'INSERT') THEN
+    RAISE EXCEPTION 'FAIL: rejected preflight changed fixture grants before authorization checks completed';
+  END IF;
+END
+$assert_unchanged$;
+SQL
 
 expect_policy_drift_rejected() {
   local table_name="$1"

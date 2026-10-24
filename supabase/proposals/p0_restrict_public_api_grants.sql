@@ -46,6 +46,7 @@ BEGIN
       AND tablename = 'categories'
       AND policyname = 'Public can read categories'
       AND permissive = 'PERMISSIVE'
+      AND permissive = 'PERMISSIVE'
       AND cmd = 'SELECT'
       AND roles @> ARRAY['anon', 'authenticated']::name[]
       AND qual = 'true'
@@ -58,6 +59,7 @@ BEGIN
     WHERE schemaname = 'public'
       AND tablename = 'products'
       AND policyname = 'Public can read published products'
+      AND permissive = 'PERMISSIVE'
       AND cmd = 'SELECT'
       AND roles @> ARRAY['anon', 'authenticated']::name[]
       AND qual = '(is_published = true)'

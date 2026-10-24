@@ -200,3 +200,8 @@ Do not silently fill in these policy choices:
 - Production backup/recovery targets and deployment approval ownership.
 
 Until resolved, use conservative defaults, synthetic data and fail-closed behavior.
+
+
+## 13. Protected Core policy amendments
+
+The six Core principles are protected against direct and indirect changes. Any change that alters their meaning or enforcement—including permissions, RLS, default privileges, tenant boundaries, secrets handling, CI/CD, builder instructions or approval logic—must follow [Core Governance — Policy Amendment & Scope Expansion Authorization](./CORE-GOVERNANCE-CHANGE-AUTHORIZATION.md). At least one creator-authorization method must be verified in addition to normal identity and role authorization. Approval is scoped to the reviewed change and does not authorize live database operations or deployment. The governance document is proposed until technical enforcement is implemented and verified.

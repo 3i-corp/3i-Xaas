@@ -27,7 +27,7 @@ function parsePolicy(policy) {
   const directives = new Map();
 
   for (const part of policy.split(";")) {
-    const tokens = part.trim().split(/\\s+/).filter(Boolean);
+    const tokens = part.trim().split(/\s+/).filter(Boolean);
     if (tokens.length === 0) continue;
 
     const name = tokens[0].toLowerCase();

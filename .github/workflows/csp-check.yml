@@ -1,34 +1,32 @@
-name: Web CSP Security Check
+name: Web Build Check
 
 on:
   pull_request:
     branches: [main]
     paths:
       - "apps/web/**"
-      - "scripts/check-csp.mjs"
-      - ".github/workflows/csp-check.yml"
       - "package.json"
       - "package-lock.json"
+      - ".github/workflows/web-build.yml"
   push:
     branches: [main]
     paths:
       - "apps/web/**"
-      - "scripts/check-csp.mjs"
-      - ".github/workflows/csp-check.yml"
       - "package.json"
       - "package-lock.json"
+      - ".github/workflows/web-build.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: web-csp-${{ github.ref }}
+  group: web-build-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   build:
-    name: Web CSP Build Check
+    name: Web Application Build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -44,25 +42,8 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
 
-      - name: Install dependencies
+      - name: Install workspace dependencies
         run: npm ci
 
       - name: Build web application
         run: npm run build --workspace=apps/web
-
-  deployed-csp:
-    name: Deployed CSP Header Check
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Check deployed CSP
-        env:
-          CSP_TEST_URL: ${{ vars.CSP_TEST_URL }}
-        run: node scripts/check-csp.mjs

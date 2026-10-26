@@ -1,0 +1,31 @@
+name: Deployed Security Headers Check
+
+# This workflow is intentionally manual until a real apps/web deployment exists.
+# Once hosting is configured, set the CSP_TEST_URL repository variable to the
+# HTTPS URL that actually serves apps/web before running this workflow.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deployed-security-headers
+  cancel-in-progress: false
+
+jobs:
+  deployed-csp:
+    name: Deployed CSP Header Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Check deployed CSP
+        env:
+          CSP_TEST_URL: ${{ vars.CSP_TEST_URL }}
+        run: node scripts/check-csp.mjs

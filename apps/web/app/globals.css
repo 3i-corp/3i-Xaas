@@ -3,6 +3,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --muted: #52525b;
+  --border: #e4e4e7;
+  --panel: #fafafa;
+  --surface: #f4f4f5;
 }
 
 @theme inline {
@@ -16,28 +20,16 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --muted: #a1a1aa;
+    --border: #27272a;
+    --panel: #111113;
+    --surface: #27272a;
   }
 }
 
 body {
+  min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
-}
-:root {
-  --bg: #ffffff;
-  --text: #111111;
-}
-
-.dark {
-  --bg: #111111;
-  --text: #ffffff;
-}
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  transition:
-          background 0.2s ease,
-          color 0.2s ease;
 }

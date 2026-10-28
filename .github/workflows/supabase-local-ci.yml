@@ -67,7 +67,20 @@ jobs:
 
       - name: Start Supabase locally
         id: start_supabase
-        run: supabase start
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Supabase CLI startup output includes local API keys and other credentials.
+          # Keep it in the runner temp directory instead of exposing it in public CI logs.
+          startup_log="$RUNNER_TEMP/supabase-start.log"
+          if supabase start >"$startup_log" 2>&1; then
+            echo "PASS: local Supabase started successfully; credential-bearing startup output was suppressed."
+          else
+            status=$?
+            echo "::error::Supabase local startup failed (exit code $status). Raw startup output was withheld because it may contain local credentials."
+            exit "$status"
+          fi
 
       - name: Generate local environment variables
         shell: bash

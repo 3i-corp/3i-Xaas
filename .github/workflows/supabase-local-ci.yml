@@ -22,12 +22,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           persist-credentials: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
@@ -61,20 +61,35 @@ jobs:
           echo "PASS: all required local integration test prerequisites are present."
 
       - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v1
+        uses: supabase/setup-cli@v3
         with:
           version: latest
 
       - name: Start Supabase locally
         id: start_supabase
-        run: supabase start
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Supabase CLI startup output includes local API keys and other credentials.
+          # Keep it in the runner temp directory instead of exposing it in public CI logs.
+          startup_log="$RUNNER_TEMP/supabase-start.log"
+          if supabase start >"$startup_log" 2>&1; then
+            echo "PASS: local Supabase started successfully; credential-bearing startup output was suppressed."
+          else
+            status=$?
+            echo "::error::Supabase local startup failed (exit code $status). Raw startup output was withheld because it may contain local credentials."
+            exit "$status"
+          fi
 
       - name: Generate local environment variables
         shell: bash
         run: |
           set -euo pipefail
 
-          supabase status --output env >> "$GITHUB_ENV"
+          # Only export the two variables consumed by the current smoke-test runner.
+          # Avoid copying the full local Supabase environment into GITHUB_ENV,
+          # which can cause unrelated local credentials to appear in step metadata/logs.
           echo "SUPABASE_URL=http://127.0.0.1:54321" >> "$GITHUB_ENV"
 
           service_role_key="$(supabase status --output json | jq -er '.SERVICE_ROLE_KEY')"

@@ -36,6 +36,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Test license policy scanner
+        run: npm run test:license
+
+      - name: Scan npm dependency licenses
+        run: npm run license:check
+
       # Required checks must never report success when integration tests were skipped.
       - name: Validate integration test prerequisites
         id: integration_prerequisites

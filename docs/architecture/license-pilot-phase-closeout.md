@@ -2,35 +2,48 @@
 
 **As of:** 2026-10-30  
 **PR:** https://github.com/3i-corp/3i-Xaas/pull/23  
-**State:** Technical implementation in validation; policy approval and release authorization remain open.
+**State:** Engineering baseline and evidence generator implemented; latest CI validation pending. Human policy approval and release authorization remain open.
 
 ## Completed and evidenced
 
 - Business Owner confirmed GPL-3.0 is intentional for 3i-XaaS source code (2026-10-30).
-- Root LICENSE was preserved unchanged.
-- Main-branch npm lockfile inventory was recorded in `license-inventory-pilot.md`.
-- Policy and inventory documents were added to the pilot PR.
-- Supabase Local CI & Integration Tests Run #83 completed successfully on commit `29916c732da1a7a52967d6299ee7774111ea4eab`; job steps show dependency installation, local Supabase startup, integration test execution, status reporting and shutdown all succeeded.
-- A dependency-license scanner and version-controlled policy configuration were added:
+- Root LICENSE remains unchanged.
+- Main-branch npm lockfile inventory is recorded in `license-inventory-pilot.md`.
+- Policy, inventory and closeout documents are maintained in this Draft PR.
+- Root `package.json` retains its existing fields/scripts and adds license/evidence commands only.
+- Local CI workflow retains its existing checks and read-only contents permission; it adds scanner validation, evidence generation and artifact upload.
+- Scanner and policy files:
   - `scripts/license-compliance.mjs`
   - `scripts/test-license-compliance.mjs`
   - `config/license-policy.json`
-- Root npm scripts expose `test:license` and `license:check`.
-- Existing Local CI workflow now runs scanner self-tests and the dependency scan after `npm ci`.
-- Scanner behavior is intentionally conservative:
-  - PASS for configured permissive intake licenses.
-  - REVIEW_REQUIRED for GPL-3.0 third-party packages, LGPL, MPL, CC-BY and first-party workspace ownership metadata.
-  - FAIL for restricted, unknown, malformed or missing third-party license metadata.
-  - CONFIGURATION_ERROR exits non-zero for invalid/missing policy or lockfile configuration.
-  - SPDX AND/OR expressions are evaluated without reducing a composite expression to its most permissive component.
-- Conditional findings are reported in the GitHub Actions step summary. The current pilot configuration blocks FAIL and CONFIGURATION_ERROR; it does not yet make REVIEW_REQUIRED a merge or release gate.
+- Evidence generator: `scripts/generate-evidence-package.mjs`.
+- Batch 1 templates: ownership declaration, contributor/contractor rights review and approval record.
+- Batch 2 templates: distribution assessment, compatibility review and scan-exceptions register.
+- Batch 3 templates: artifact inventory and release-to-source traceability.
+- Workstream ownership and handoff instructions: `docs/license-governance/README.md`.
 
-## Validation still in progress
+## CI evidence
 
-- The CI run triggered by the scanner implementation must complete on the latest PR HEAD. A previous successful run is not evidence that the new scanner has passed.
-- Inspect the scanner self-test and scan output, including all 473 lockfile entries and the 5 recognized workspace links.
-- Confirm the scanner report counts against the inventory snapshot and review any discrepancies.
-- Verify the npm lockfile remains unchanged and `npm ci` remains reproducible.
+### Scanner implementation — Run #88
+
+Run #88 was associated with commit `f7190d361e1ae9e62aa19be6f340fd381b99bc4b`.
+
+- License parser/classifier self-tests: 14 passed.
+- Lockfile entries scanned: 473.
+- Results: 440 PASS, 33 REVIEW_REQUIRED, 0 FAIL.
+- The five workspace links were classified as first-party ownership review items.
+- Web Build Check Run #9 also completed successfully on that commit.
+- The Supabase Local CI job reported success for all listed steps, including local Supabase startup and the integration test step. Docker image pulls encountered rate-limit responses and retried; retain this operational caveat when interpreting the run evidence.
+
+### Evidence package implementation — latest validation pending
+
+The following were added after Run #88:
+- `npm run evidence:generate`
+- A generator that runs the scanner, writes `license-scan.json`, creates an `evidence-manifest.json` with SHA-256 digests and records explicit scope limitations.
+- Workflow upload of the generated directory as a GitHub Actions artifact with 14-day retention.
+- Batch 1, 2 and 3 governance templates and the handoff workplan.
+
+The latest PR head at the time of this record is `ff8fdb4781a40a731e250e25c176d5c235879c0f`. CI validation for this head is pending; do not treat the earlier Run #88 as validation of the new generator or artifact upload.
 
 ## Required owner / legal decisions — not delegated to automation
 
@@ -50,7 +63,7 @@ This PR remains Draft and must not be merged solely because CI passes. Do not ad
 
 ## Phase status
 
-**Engineering baseline:** implemented, pending CI verification.  
+**Engineering baseline:** implemented; latest evidence-generator CI validation pending.  
 **Legal / ownership / distribution review:** open.  
 **Release enforcement:** not enabled.  
 **Pilot approval:** not granted.

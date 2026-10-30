@@ -1,141 +1,166 @@
 # 3i-XaaS Software License & Open-Source Compliance Policy
-## Pilot Baseline v0.2 — Evidence-aligned draft
+## Pilot Baseline v0.3 — GPL-3.0 confirmed
 
 **Organization:** Innovative Intellect Insights Corp. (3i Corp)  
 **Pilot repository:** 3i-corp/3i-XaaS  
 **Status:** DRAFT — for Business Owner, Technical Owner and Legal review  
+**Project license intent:** GPL-3.0 is intentional for 3i-XaaS source code, as confirmed by the Business Owner on 2026-10-30.  
 **Scope:** npm workspaces and dependencies represented by the root package-lock.json on main  
-**Evidence snapshot:** main; package-lock.json lockfileVersion 3; root LICENSE identified as GNU GPL-3.0  
-**Effective date:** Not effective until approved
+**Effective date:** Not effective until formal approval
 
-> This document is an engineering compliance baseline, not legal advice. It does not grant rights, relicense company code, or establish ownership. The repository's existing GPL-3.0 license is a material open decision and must not be changed without explicit legal/business approval.
+> This is an engineering policy draft, not legal advice. The confirmation establishes project intent; it does not independently establish copyright ownership, contributor assignments, or compliance for every dependency and distribution scenario.
 
 ## 1. Purpose and principles
 
-Establish a repeatable process to identify, classify, approve and retain evidence for software licenses used by 3i-XaaS. Apply transparency, least-risk selection, evidence-first review, separation of duties, scoped exceptions, and no silent bypass of compliance checks.
+Identify, classify, approve and retain evidence for licenses used by 3i-XaaS. Apply transparency, evidence-first review, separation of duties, scoped exceptions and no silent bypass of compliance checks.
 
-A successful build is not evidence of license compliance.
+A successful build is not evidence of license compliance. GPL-3.0 is the intended license for the project's own source code and must not be classified as prohibited for the project itself.
 
-## 2. Pilot scope
+## 2. Business and licensing model
+
+3i-XaaS intentionally uses GPL-3.0 for its project source. GPL-3.0 does not prohibit commercial activity: the company may charge for copies, support, customization and services. When conveying covered copies or modified/combined works, the company must meet the applicable GPL-3.0 conditions, including license notices, recipients' rights and Corresponding Source obligations for object-code distribution.
+
+Mere remote interaction with a program over a network, without transfer of a copy, is not by itself conveying under GPL-3.0. This differs from AGPL-3.0, which has a network-interaction source-offer provision. The actual delivery model, software boundaries and combined-work analysis still matter.
+
+Business models requiring specific review:
+- SaaS/hosted service: verify whether users receive copies or only interact remotely; review downloadable clients, agents, SDKs and on-premise components separately.
+- On-premise/self-hosted distribution: establish a process to provide exact Corresponding Source, license texts and required notices for each released version.
+- Customization and integrations: assess whether the code forms one combined/derivative work or separate independent works; repository or process separation alone does not decide this.
+- Marketplace and third-party extensions: define technical and licensing boundaries; do not promise proprietary licensing for code that is part of a GPL-covered combined work without a valid separate permission/right.
+- Enterprise contracts: commercial terms, support and warranties must not take away recipients' GPL rights.
+
+Do not use this policy to infer that all company products, unrelated services, customer data, trademarks, hosted operations or independent programs are automatically GPL-licensed. Scope must be assessed work by work.
+
+## 3. Pilot scope and limitations
 
 This pilot covers:
 - Direct and transitive npm packages represented in the root package-lock.json.
 - npm workspaces under apps/* and packages/*.
-- Dependencies used for production, development, build, test and optional platform targets.
-- License and notice files present in the repository.
+- Production, development, build, test and optional platform dependencies.
+- Root project LICENSE and repository license/notice files.
 
-This snapshot does not yet cover GitHub Actions' third-party actions, container/base images, system packages, downloaded binaries not represented in npm lockfiles, SaaS/API terms, fonts, media, datasets, or separately vendored source. Those require separate inventory work before claiming repository-wide completeness.
+Not yet covered: GitHub Actions third-party actions, containers/base images, system packages, downloaded binaries outside npm lockfiles, SaaS/API terms, fonts, media, datasets, vendored code, generated assets and all upstream license texts. Do not claim repository-wide compliance until these are inventoried.
 
-## 3. Inventory evidence and baseline
+## 4. Inventory evidence
 
-The main-branch lockfile contains 473 node_modules entries:
-- 468 third-party package entries have a license field.
-- 5 entries are workspace links/local aliases without a third-party license field; these are not automatically missing third-party licenses.
-- 13 distinct SPDX license identifiers/expressions were observed among the 468 third-party entries.
+The inspected main-branch lockfile has 473 node_modules entries:
+- 468 third-party package entries with a license field.
+- 5 local workspace links/aliases without a third-party license field.
+- 14 distinct license identifiers/expressions in the observed list (corrected from the prior draft's count of 13).
 - 10 entries identify LGPL-3.0-or-later.
-- 3 additional entries use composite expressions containing LGPL-3.0-or-later.
-- 13 MPL-2.0 entries are marked dev dependencies in the lockfile.
-- 1 CC-BY-4.0 entry is present.
-- 5 license-field omissions correspond to local workspace aliases: four internal package links and the apps/web workspace link.
+- 4 additional entries use composite expressions containing LGPL-3.0-or-later.
+- 13 MPL-2.0 entries are marked dev dependencies.
+- 1 CC-BY-4.0 entry.
 
-The root LICENSE file is GNU GPL version 3. This means the repository's own licensing posture is not yet aligned/settled merely by classifying third-party dependencies. Confirm whether GPL-3.0 is intentional for all repository source, whether it is legacy content, or whether separate licensing/ownership arrangements exist. Do not infer proprietary ownership or silently replace GPL-3.0.
+Counts are lockfile entries, not unique upstream projects; optional platform variants are counted separately. See docs/architecture/license-inventory-pilot.md.
 
-See docs/architecture/license-inventory-pilot.md for the observed license counts, package names requiring review, and evidence references.
+## 5. Classification for this GPL-3.0 project
 
-## 4. Classification for this Pilot
+### 5.1 Project source — GPL-3.0
+GPL-3.0 is the intentional project license, not a prohibited dependency category. Maintain the root LICENSE and clear notices identifying which project files/work are covered. Confirm company copyright ownership and contributor/contractor rights. Do not change the root license without explicit Business Owner and legal approval.
 
-### 4.1 Generally acceptable subject to notice preservation
-MIT, ISC, BSD-2-Clause, BSD-3-Clause, Apache-2.0, 0BSD, CC0-1.0, Python-2.0, and BlueOak-1.0.0 may be treated as generally acceptable for engineering intake, provided the exact upstream license is verified and required copyright, license, attribution and NOTICE material is retained.
+### 5.2 Generally acceptable intake, subject to exact terms and notices
+MIT, ISC, BSD-2-Clause, BSD-3-Clause, Apache-2.0, 0BSD, CC0-1.0, Python-2.0 and BlueOak-1.0.0 can generally be considered for use in a GPL-3.0 project, subject to verification of the exact license, preservation of notices/attribution and any additional terms. Apache-2.0 is compatible with GPL-3.0 (not GPL-2.0-only); preserve Apache notices and applicable NOTICE material.
 
-This is an internal intake classification, not a blanket legal approval for every usage or distribution model.
+This is an intake classification, not blanket approval for every artifact, use or distribution.
 
-### 4.2 Review required before production distribution or material use
-- MPL-2.0: determine whether covered files are modified and what source-disclosure obligations apply.
-- LGPL-3.0-or-later: determine the actual platform package selected, linking/deployment model, whether it is distributed or merely used in hosted infrastructure, and applicable relinking/source obligations.
-- Any SPDX expression containing LGPL: review the full expression and the exact package/artifact; do not simplify it to Apache or MIT.
-- CC-BY-4.0: identify the attributed material/data and retain attribution, license link and change notices as applicable.
-- Any new or unrecognized license, custom license, dual-license choice, or package with ambiguous metadata.
+### 5.3 Review required
+- GPL-3.0 third-party packages: potentially compatible when the combined work is conveyed under GPL-3.0; verify exact version, source, notices and combined-work scope.
+- GPL-2.0-only: do not combine or distribute as part of a GPL-3.0-only combined work without a valid compatibility route or permission. GPL-2.0-or-later requires checking the actual option and notices.
+- LGPL-3.0-or-later: GPL-3.0 compatibility exists under the applicable terms, but verify actual package selected, linking/combination, distribution and Corresponding Source obligations. Do not assume optional packages are shipped.
+- LGPL-2.1 and other LGPL versions: assess version-specific compatibility and relinking/source requirements; do not treat all LGPL versions as interchangeable.
+- MPL-2.0: review file-level copyleft, modifications, notices and the applicable GPL secondary-license option/compatibility provisions.
+- Any SPDX expression containing multiple licenses: preserve and interpret the full expression; do not simplify it to the most permissive component.
+- CC-BY-4.0: identify the material/data and meet attribution, license-link and change-notice requirements as applicable.
+- Dual-license, custom, source-available or ambiguous metadata: document the selected option and obtain review.
 
-### 4.3 Restricted by default pending legal review
-GPL-2.0, GPL-3.0, AGPL-3.0, SSPL, Commons Clause, non-commercial/no-redistribution terms, source-available terms, and any license whose restrictions conflict with the intended product/distribution model.
+### 5.4 Restricted by default pending legal review
+AGPL-3.0, SSPL, Commons Clause, non-commercial/no-redistribution terms, and any terms that conflict with the product's intended distribution or service model. AGPL-3.0 is not the project's chosen license; its network-source provision and interaction with GPL-3.0 must be assessed before combination or distribution. Restricted by default is an internal gate, not a claim that the license is unlawful.
 
-Restricted by default is an internal approval gate, not a statement that the license is unlawful. The existing root GPL-3.0 file is an explicit unresolved project-level decision, not a dependency scan finding.
+### 5.5 Unknown or absent third-party license
+Unknown third-party license metadata is REVIEW_REQUIRED or BLOCKED from release until verified from an authoritative upstream source. Never infer permission from absence of a license.
 
-### 4.4 Unknown or absent third-party license
-Unknown third-party license metadata must be REVIEW_REQUIRED or BLOCKED from release until verified from an authoritative upstream source. Never infer permission from the absence of a license.
+## 6. Internal workspace and ownership
 
-Local workspace links are handled separately under section 5.
-
-## 5. Internal workspace and project-source licensing
-
-The lockfile's five no-license entries are local workspace aliases, not five unknown external libraries:
-- apps/web (workspace link)
+The five lockfile entries without license fields are local workspace links/aliases, not automatically unknown third-party packages:
+- apps/web
 - packages/metrics-runtime
 - packages/room-runtime
 - packages/runtime-core
 - packages/websocket-runtime
 
-Their package.json files do not currently declare a license field. Other lockfile workspace records marked extraneous (including digital-twin, event-bus, state-runtime and nested room-state-runtime) also need reconciliation against the current workspace configuration.
+Their package metadata does not currently declare a license field. Align package-level metadata and source headers with the confirmed GPL-3.0 project intent only after verifying that the company has the rights to license all included contributions. Identify third-party files and separately licensed material; the root LICENSE does not override third-party copyrights or licenses.
 
-Do not automatically add a proprietary license identifier. The company must first establish copyright ownership, contributor/contractor assignment, and the intended public/private distribution terms. After approval, align the root LICENSE, package metadata and repository documentation consistently.
+Other lockfile workspace records marked extraneous (digital-twin, event-bus, state-runtime and nested room-state-runtime) need reconciliation against current workspace configuration.
 
-## 6. Required intake evidence
+## 7. Distribution and release obligations
 
-For each direct or transitive third-party package, retain:
-- Package name, exact resolved version and source/registry.
-- SPDX license identifier or full license expression.
-- Direct/transitive and production/development/optional classification.
-- Upstream license/NOTICE evidence where metadata is ambiguous.
-- Actual use and distribution/deployment model for review-required packages.
-- Decision, reviewer, approver, date and exception expiry where applicable.
+For every release that conveys a covered program:
+- Preserve copyright, license, warranty and modification notices.
+- Include a copy of GPL-3.0 and identify covered work.
+- For object-code distribution, provide Corresponding Source using a GPL-permitted method and ensure it corresponds to the exact released binary/version.
+- Include build/install scripts and source components required by the GPL definition of Corresponding Source, subject to its stated exclusions.
+- For User Products where applicable, assess Installation Information requirements.
+- Ensure EULA, enterprise terms, technical controls and DRM do not impose restrictions inconsistent with GPL rights.
+- Maintain release-to-source traceability and archive the exact source, lockfile, notices and build instructions.
 
-Preserve package-manager lockfiles. Do not replace a lockfile's license expression with a simplified label.
+Legal review is required to determine the exact obligations for each product delivery method and jurisdiction.
 
-## 7. CI enforcement design
+## 8. Required intake evidence
 
-The License Compliance workflow should be implemented only after the policy file and scanner behavior are tested. It must:
-1. Read the committed lockfile and version-controlled policy configuration.
+For each direct/transitive third-party package, retain package name, exact version, source/registry, SPDX identifier/full expression, dependency scope (prod/dev/optional), upstream license/NOTICE evidence where needed, actual use/distribution model, decision, reviewer, approver and exception expiry.
+
+Preserve lockfiles and full SPDX expressions. Generate and retain an SBOM for release candidates when tooling is available.
+
+## 9. CI enforcement design
+
+The License Compliance workflow must:
+1. Read committed lockfiles and version-controlled policy configuration.
 2. Fail closed with CONFIGURATION_ERROR if policy configuration is missing or invalid.
-3. Report package, version, license expression and dependency scope.
+3. Report package, version, full license expression and dependency scope.
 4. Distinguish PASS, REVIEW_REQUIRED, FAIL and CONFIGURATION_ERROR.
-5. Never silently skip checks or convert an unknown license to PASS.
-6. Produce an auditable report for each pull request.
-7. Test known Allowed, Conditional, Restricted, Unknown and composite-expression fixtures.
+5. Evaluate GPL-3.0 as the project's intended license; do not blanket-block it.
+6. Apply compatibility rules conservatively and flag GPL-2.0-only, LGPL variants, MPL, AGPL, custom and unknown expressions for contextual review.
+7. Never silently skip checks or convert unknown licenses to PASS.
+8. Test Allowed, Conditional, Restricted, Unknown and composite-expression fixtures.
+9. Produce auditable reports on each pull request and release candidate.
 
-Do not add this check to Branch Rulesets as a Required Check until its name, execution, failure behavior and PR reporting have been verified. Ruleset changes require separate governance approval.
+Do not add the check to Branch Rulesets as a Required Check until its name, execution, failure behavior and PR reporting are verified. Ruleset changes require separate governance approval.
 
-## 8. Exception process
+## 10. Exceptions
 
-Every exception must be limited to a named package, version, repository, use case and time period. Record business reason, technical alternatives, distribution model, risk controls, reviewer, approver, decision date and expiry. The requester cannot be the sole approver. An exception does not amend the upstream license.
+Each exception must name package, version, repository, use case, distribution model, risk controls, reviewer, approver, decision date and expiry. The requester cannot be the sole approver. An exception cannot amend an upstream license or waive rights of third-party copyright holders.
 
-## 9. Roles
+## 11. Roles
 
-- Business Owner: approves the policy and business-risk exceptions.
+- Business Owner: approves policy, business model and risk exceptions.
 - Technical Owner: owns inventory, tooling and implementation.
-- Developer/AI Agent: supplies package and source evidence; cannot approve its own exception.
-- Code Reviewer: verifies dependency changes and evidence in PR.
-- Legal Advisor: reviews copyleft, attribution, source-disclosure and ownership questions.
+- Developer/AI Agent: supplies evidence; cannot approve its own exception.
+- Code Reviewer: verifies dependency changes and PR evidence.
+- Legal Advisor: reviews copyleft, compatibility, source-disclosure, ownership and contracts.
 - Repository Administrator: configures GitHub controls only after approval.
 
-## 10. Pilot acceptance gates
+## 12. Pilot acceptance gates
 
 The pilot is not complete until:
-- Root GPL-3.0 intent and company source-licensing posture are resolved in writing.
-- LGPL-containing sharp platform packages and MPL development packages are reviewed for actual use/distribution.
+- GPL-3.0 scope, copyright ownership, contributor/contractor rights and source notices are confirmed.
+- SaaS versus copy-conveying delivery models are documented for each product surface.
+- LGPL sharp platform packages and MPL development packages are assessed for actual use and distribution.
 - CC-BY-4.0 attribution obligations are recorded.
-- Internal workspace licensing/ownership and stale lockfile workspace entries are reconciled.
-- A full inventory includes GitHub Actions and any other shipped/vendored artifacts in scope.
-- The scanner is tested against all four policy outcomes and composite SPDX expressions.
-- A PR demonstrates the check executing and reporting accurately.
-- Business Owner and relevant legal/technical reviewers approve the policy.
+- Internal workspace metadata and stale lockfile workspace entries are reconciled.
+- GitHub Actions, containers, vendored assets and other shipped artifacts are inventoried.
+- Release source-correspondence and notice-generation process is demonstrated.
+- Scanner is tested against all policy outcomes and composite expressions.
+- A PR demonstrates the check executing accurately.
+- Business Owner and relevant legal/technical reviewers approve the final policy.
 
-Until these gates pass, this document remains a draft and must not be used to claim full compliance or authorize a production release.
+Until these gates pass, this document remains a draft and is not a compliance certification or production-release authorization.
 
-## 11. Review cycle
+## 13. Review cycle
 
-Review at least every 90 days during the pilot, and whenever dependencies, distribution model, repository licensing, or product architecture materially changes.
+Review at least every 90 days during the pilot and whenever dependencies, distribution model, repository licensing or product architecture materially changes.
 
-## 12. Approval
+## 14. Approval
 
 Status: DRAFT — not effective  
 Business Owner: ____________________  

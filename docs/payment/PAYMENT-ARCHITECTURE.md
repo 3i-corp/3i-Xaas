@@ -108,18 +108,3 @@ packages/
 ```
 
 These are package/domain boundaries, not a mandate to create empty runtime services. Each package must be added only with an agreed contract, ownership, tests and implementation phase. payment-core never owns wallet balances; iii-wallet owns the ledger; iii-card owns card lifecycle and issuer integration. Cross-domain writes occur only through versioned APIs/events.
-
-## 8. Repository layout alignment
-
-The repository is an npm-workspaces monorepo with apps/* and packages/* workspaces. The approved conceptual domains therefore map under packages/, rather than creating root-level workspace directories:
-
-```text
-packages/
-├── payment-core/{payment-intents,payment-attempts,payment-webhooks,reconciliation,provider-routing}/
-├── payment-contracts/
-├── payment-adapters/{omise,2c2p,xendit}/
-├── iii-wallet/{accounts,ledger,topups,balances}/
-└── iii-card/{card-issuer-adapter,virtual-cards,authorizations,card-transactions}/
-```
-
-Omise is the intended first adapter, subject to exact account/capability verification. 2C2P and Xendit remain future and disabled. These are package/domain boundaries, not a mandate to create empty runtime services. Payment Core does not own wallet balances; iii-wallet owns the ledger; iii-card owns card lifecycle and issuer integration. Cross-domain writes occur only through versioned APIs/events.

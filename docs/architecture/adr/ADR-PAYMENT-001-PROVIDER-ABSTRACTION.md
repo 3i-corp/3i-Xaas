@@ -27,3 +27,7 @@ New providers can be added without changing Wallet Ledger behavior. Capability d
 ## Non-goals and constraints
 
 The abstraction does not imply provider approval, merchant-account eligibility, geographic availability or production routing. Provider-specific capabilities are explicit and may be unsupported. Payment Core does not own wallet balance, card credentials or legal settlement obligations.
+
+## Non-goals and constraints
+
+The abstraction does not imply provider approval, merchant-account eligibility, geographic availability or production routing. Provider-specific capabilities are explicit and may be unsupported. Payment Core does not own wallet balance, card credentials or legal settlement obligations.

@@ -1,6 +1,12 @@
+> **3i-XaaS Payment Baseline:** v1.0 — 2026-11-04  
+> **Scope approval:** Approved by the project owner for architecture and documentation scope.  
+> **Repository disposition:** PR #24; independent review and merge are pending. This document is not yet a LOCKED repository baseline.  
+> **Permitted use:** Detailed design and controlled non-production implementation planning. This baseline does not authorize production schema/permission changes, live credentials, real-money processing, card issuance, module activation, or deployment.  
+> **Controlling policy:** Existing III Wallet ADR-001, Baseline Lock policy, Phase restrictions, and Release Gates remain in force.
+
 # ADR-PAYMENT-004: III Wallet V1 — Thailand, PromptPay Funding and Prepaid Virtual Card
 
-- **Status:** Proposed — subject to independent product, architecture, compliance and security review
+- **Status:** Supplementary scope ADR — project-owner scope approved; independent review pending (not counted among the 12 baseline documents)
 - **Date:** 2026-11-04
 - **Scope:** III Wallet V1, Payment Core and iii-card
 

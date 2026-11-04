@@ -1,7 +1,13 @@
+> **3i-XaaS Payment Baseline:** v1.0 — 2026-11-04  
+> **Scope approval:** Approved by the project owner for architecture and documentation scope.  
+> **Repository disposition:** PR #24; independent review and merge are pending. This document is not yet a LOCKED repository baseline.  
+> **Permitted use:** Detailed design and controlled non-production implementation planning. This baseline does not authorize production schema/permission changes, live credentials, real-money processing, card issuance, module activation, or deployment.  
+> **Controlling policy:** Existing III Wallet ADR-001, Baseline Lock policy, Phase restrictions, and Release Gates remain in force.
+
 # PRD — Payment Module & III Wallet V1
 
-- **Status:** Draft — review required
-- **Version:** 0.1
+- **Status:** Baseline v1.0 — project-owner scope approved; independent review pending
+- **Version:** 1.0
 - **Market:** Thailand
 - **Wallet currency:** THB for V1
 - **Funding provider/method:** Omise PromptPay QR, subject to merchant onboarding and capability confirmation
@@ -19,7 +25,14 @@ Deliver a controlled first release of III Wallet for Thailand. A customer initia
 - Card Issuer/Program Manager: external provider for issuance, authorization and card lifecycle; not assumed to be Omise.
 - Operations/Compliance: monitors exceptions, reconciliation, controls and disputes.
 
-## 3. Functional requirements
+## 3. Product and currency boundary
+
+- Platform ledger design remains currency-aware for THB, USD and KHR under the existing III Wallet ADR-001.
+- Thailand V1 funding/top-up and spendable wallet product scope is THB only; USD/KHR are not enabled for V1 funding or card spend by this PRD.
+- Existing product baselines remain controlling: THB 100,000 equivalent stored-balance cap per Wallet account and THB 50,000 equivalent daily limit per transaction category. Incoming transaction limits are separate. Exact aggregation, FX valuation, timezone and state-counting rules must be versioned before enforcement.
+- These product limits are not regulatory permission or provider capability confirmation.
+
+## 4. Functional requirements
 
 ### 3.1 PromptPay funding
 1. Authenticated customer requests a THB top-up within configurable policy limits.
@@ -50,13 +63,13 @@ Deliver a controlled first release of III Wallet for Thailand. A customer initia
 - No PAN/CVV in application tables, logs, analytics or support tools. Use issuer-hosted/tokenized display and controls.
 - Issuer availability, funding mechanics, verification, fees, limits and supported currencies are discovery gates.
 
-## 4. Non-functional requirements
+## 5. Non-functional requirements
 Server-side authorization; idempotent payment/ledger writes; concurrency-safe balance reservation/debit; append-only audit history; webhook signature verification/replay protection/deduplication; provider-independent versioned contracts; observability; server-side secret management; no binary floating point for money; explicit currency/provider capability configuration.
 
-## 5. Out of scope
+## 6. Out of scope
 Withdrawals, payouts, P2P, third-party merchant acquiring, seller settlements, multi-currency wallet spend, FX, physical cards, cash advances, credit/overdraft, rewards/cashback, bill pay and mobile top-ups.
 
-## 6. Success criteria
+## 7. Success criteria
 - PromptPay sandbox top-up succeeds end-to-end and credits exactly once.
 - Duplicate/replayed webhooks and client retries cannot duplicate credit.
 - Invalid signature, amount/currency mismatch, stale event and provider timeout do not create spendable balance.
@@ -66,8 +79,8 @@ Withdrawals, payouts, P2P, third-party merchant acquiring, seller settlements, m
 - Operations identify unmatched, stale and failed provider transactions.
 - Independent security, product, finance and compliance reviews recorded before pilot.
 
-## 7. Open decisions
+## 8. Open decisions
 Confirm contracting/legal entity and who legally holds funds; Omise merchant account, PromptPay enablement, settlement account, fees, refund behavior and support SLA; issuer/program/network; KYC/AML, safeguarding, payment-services, consumer disclosure, privacy and PCI obligations with qualified specialists; top-up limits, fees, QR expiry and support SLAs.
 
-## 8. Release boundary
+## 9. Release boundary
 Implementation begins in local/test and provider sandbox only. Production money movement, live card issuance and customer launch remain disabled until governance and release gates are independently approved.

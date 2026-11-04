@@ -56,3 +56,12 @@ Verify signature against exact raw request body and documented canonicalization.
 - Use explicit error categories: VALIDATION_ERROR, NOT_FOUND, FORBIDDEN, CONFLICT, IDEMPOTENCY_CONFLICT, PROVIDER_UNAVAILABLE, PROVIDER_UNKNOWN, LIMIT_EXCEEDED and REQUIRES_REVIEW.
 - A timeout after provider submission is UNKNOWN/PENDING until the original attempt is retrieved or reconciled; do not create a second provider charge as automatic failover.
 - Pagination, filtering, rate limits, retention, authentication scopes and exact response schemas are implementation deliverables and must be reviewed before publishing endpoints.
+
+## Error and consistency contract
+
+- Responses use stable internal resource IDs and normalized domain status; provider-specific IDs are opaque references.
+- Mutating requests require an idempotency key scoped to authenticated tenant/account and operation. Reuse with a different request body returns a conflict; identical retries return the original outcome.
+- Amount/currency are validated server-side against account, product, country and provider capabilities. Never accept a client-supplied balance or authoritative fee/status.
+- Use explicit error categories: VALIDATION_ERROR, NOT_FOUND, FORBIDDEN, CONFLICT, IDEMPOTENCY_CONFLICT, PROVIDER_UNAVAILABLE, PROVIDER_UNKNOWN, LIMIT_EXCEEDED and REQUIRES_REVIEW.
+- A timeout after provider submission is UNKNOWN/PENDING until the original attempt is retrieved or reconciled; do not create a second provider charge as automatic failover.
+- Pagination, filtering, rate limits, retention, authentication scopes and exact response schemas are implementation deliverables and must be reviewed before publishing endpoints.

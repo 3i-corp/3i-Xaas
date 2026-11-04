@@ -33,7 +33,3 @@ Reconciliation is repeatable/idempotent. Never silently edit posted ledger entri
 ## Operational control and evidence
 
 Each reconciliation run records provider/account, reporting window and timezone, source-file/API reference, retrieval timestamp, checksum where available, parser version, run ID, matching rules version, counts/totals by currency, and exception count. Exceptions include severity, owner, age, source evidence, proposed action, reviewer and closure evidence. Re-running a period must be idempotent and must not duplicate ledger adjustments. Unresolved differences remain visible; they are not silently written off.
-
-## Operational control and evidence
-
-Each reconciliation run records provider/account, reporting window and timezone, source-file/API reference, retrieval timestamp, checksum where available, parser version, run ID, matching rules version, counts/totals by currency, and exception count. Exceptions include severity, owner, age, source evidence, proposed action, reviewer and closure evidence. Re-running a period must be idempotent and must not duplicate ledger adjustments. Unresolved differences remain visible; they are not silently written off.

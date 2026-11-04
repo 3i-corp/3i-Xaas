@@ -40,3 +40,12 @@ Threat model, privacy, legal/compliance, provider onboarding, issuer approval, p
 - Store minimal provider payload evidence with access controls and retention limits; never expose raw webhook payloads to clients.
 - Rotate provider credentials through approved secret-management procedures; access must be environment-scoped and least-privileged.
 - Production release requires independent security, finance/ledger, compliance/legal and operations acceptance plus the project's sequential release gates.
+
+## Financial control requirements
+
+- Separate maker and checker for manual adjustments, refunds above policy thresholds, route-policy changes, limit overrides and emergency actions.
+- Apply tenant/account authorization on every read and write; derive ownership from verified server context.
+- Use atomic ledger posting and reservation controls; reject negative/over-limit available balance and concurrent double spend.
+- Store minimal provider payload evidence with access controls and retention limits; never expose raw webhook payloads to clients.
+- Rotate provider credentials through approved secret-management procedures; access must be environment-scoped and least-privileged.
+- Production release requires independent security, finance/ledger, compliance/legal and operations acceptance plus the project's sequential release gates.

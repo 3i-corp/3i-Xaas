@@ -25,3 +25,7 @@ Do not infer country support from generic marketing material or another merchant
 ## V1 routing disposition
 
 The matrix is an evaluation framework, not evidence that any provider or merchant account is currently enabled. Omise PromptPay is the intended first sandbox integration subject to confirming the exact legal entity, merchant account, product, country, method, currency, webhook and settlement capabilities. 2C2P and Xendit remain disabled future candidates. Routing configuration must fail closed when any required capability or approval is absent.
+
+## V1 routing disposition
+
+The matrix is an evaluation framework, not evidence that any provider or merchant account is currently enabled. Omise PromptPay is the intended first sandbox integration subject to confirming the exact legal entity, merchant account, product, country, method, currency, webhook and settlement capabilities. 2C2P and Xendit remain disabled future candidates. Routing configuration must fail closed when any required capability or approval is absent.

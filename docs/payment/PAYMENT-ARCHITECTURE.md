@@ -1,3 +1,9 @@
+> **3i-XaaS Payment Baseline:** v1.0 — 2026-11-04  
+> **Scope approval:** Approved by the project owner for architecture and documentation scope.  
+> **Repository disposition:** PR #24; independent review and merge are pending. This document is not yet a LOCKED repository baseline.  
+> **Permitted use:** Detailed design and controlled non-production implementation planning. This baseline does not authorize production schema/permission changes, live credentials, real-money processing, card issuance, module activation, or deployment.  
+> **Controlling policy:** Existing III Wallet ADR-001, Baseline Lock policy, Phase restrictions, and Release Gates remain in force.
+
 # Payment Core & III Wallet V1 — Architecture
 
 ## 1. Principles
@@ -71,3 +77,34 @@ Provider secrets stay server-side in approved secret storage. Webhook payloads a
 
 ## 7. Deployment
 Existing backend/Supabase Edge Function architecture may be evaluated where appropriate. This document does not authorize live Supabase inspection, schema mutation, secret changes or deployment. Runtime placement requires a separate implementation ADR after governance gates permit it.
+
+## 8. Repository layout alignment
+
+The repository is an npm-workspaces monorepo with apps/* and packages/* workspaces. Therefore the approved conceptual domains map to repository paths under packages/, rather than introducing new root-level workspace directories:
+
+```text
+packages/
+├── payment-core/
+│   ├── payment-intents/
+│   ├── payment-attempts/
+│   ├── payment-webhooks/
+│   ├── reconciliation/
+│   └── provider-routing/
+├── payment-contracts/
+├── payment-adapters/
+│   ├── omise/              # first adapter; enable after account/capability checks
+│   ├── 2c2p/                # future; disabled
+│   └── xendit/              # future; disabled
+├── iii-wallet/
+│   ├── accounts/
+│   ├── ledger/
+│   ├── topups/
+│   └── balances/
+└── iii-card/
+    ├── card-issuer-adapter/
+    ├── virtual-cards/
+    ├── authorizations/
+    └── card-transactions/
+```
+
+These are package/domain boundaries, not a mandate to create empty runtime services. Each package must be added only with an agreed contract, ownership, tests and implementation phase. payment-core never owns wallet balances; iii-wallet owns the ledger; iii-card owns card lifecycle and issuer integration. Cross-domain writes occur only through versioned APIs/events.

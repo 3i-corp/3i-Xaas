@@ -36,3 +36,7 @@ Record case ID, build/commit, environment, provider sandbox account, test-data c
 ## Acceptance and evidence rules
 
 A test passes only when its result is tied to the exact commit, test environment and fixture/provider sandbox. Required evidence includes request/response correlation IDs with secrets redacted, ledger before/after assertions, webhook event IDs, reconciliation outputs and test-run logs. Synthetic fixtures must be clearly labeled. A test suite that does not exercise live-provider behavior must not be described as proving live-provider readiness. Critical financial invariants require deterministic tests and concurrency/replay coverage.
+
+## Acceptance and evidence rules
+
+A test passes only when its result is tied to the exact commit, test environment and fixture/provider sandbox. Required evidence includes request/response correlation IDs with secrets redacted, ledger before/after assertions, webhook event IDs, reconciliation outputs and test-run logs. Synthetic fixtures must be clearly labeled. A test suite that does not exercise live-provider behavior must not be described as proving live-provider readiness. Critical financial invariants require deterministic tests and concurrency/replay coverage.

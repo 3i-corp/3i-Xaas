@@ -1,3 +1,9 @@
+> **3i-XaaS Payment Baseline:** v1.0 — 2026-11-04  
+> **Scope approval:** Approved by the project owner for architecture and documentation scope.  
+> **Repository disposition:** PR #24; independent review and merge are pending. This document is not yet a LOCKED repository baseline.  
+> **Permitted use:** Detailed design and controlled non-production implementation planning. This baseline does not authorize production schema/permission changes, live credentials, real-money processing, card issuance, module activation, or deployment.  
+> **Controlling policy:** Existing III Wallet ADR-001, Baseline Lock policy, Phase restrictions, and Release Gates remain in force.
+
 # Payment & Wallet Security Policy — V1 Baseline
 
 ## Trust boundaries
@@ -25,3 +31,12 @@ Alert on webhook failures, backlog, stale pending payments, provider errors and 
 
 ## Release gates
 Threat model, privacy, legal/compliance, provider onboarding, issuer approval, penetration testing and operational readiness must be evidenced before production activation. Sandbox success is not production authorization.
+
+## Financial control requirements
+
+- Separate maker and checker for manual adjustments, refunds above policy thresholds, route-policy changes, limit overrides and emergency actions.
+- Apply tenant/account authorization on every read and write; derive ownership from verified server context.
+- Use atomic ledger posting and reservation controls; reject negative/over-limit available balance and concurrent double spend.
+- Store minimal provider payload evidence with access controls and retention limits; never expose raw webhook payloads to clients.
+- Rotate provider credentials through approved secret-management procedures; access must be environment-scoped and least-privileged.
+- Production release requires independent security, finance/ledger, compliance/legal and operations acceptance plus the project's sequential release gates.

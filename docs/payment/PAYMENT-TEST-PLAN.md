@@ -1,3 +1,9 @@
+> **3i-XaaS Payment Baseline:** v1.0 — 2026-11-04  
+> **Scope approval:** Approved by the project owner for architecture and documentation scope.  
+> **Repository disposition:** PR #24; independent review and merge are pending. This document is not yet a LOCKED repository baseline.  
+> **Permitted use:** Detailed design and controlled non-production implementation planning. This baseline does not authorize production schema/permission changes, live credentials, real-money processing, card issuance, module activation, or deployment.  
+> **Controlling policy:** Existing III Wallet ADR-001, Baseline Lock policy, Phase restrictions, and Release Gates remain in force.
+
 # Payment & III Wallet V1 — Test Plan
 
 ## PromptPay sandbox
@@ -26,3 +32,7 @@ Issuance eligibility/KYC; tokenized display/no PAN-CVV leakage; freeze/unfreeze/
 Authentication/authorization and tenant isolation; secret scanning; webhook signature/replay; rate limiting/abuse controls; dependency scanning and penetration test; backup/restore; incident recovery; load/concurrency testing at approved sandbox scale.
 
 Record case ID, build/commit, environment, provider sandbox account, test-data class, result, evidence reference, defect severity, owner and reviewer. No production credentials or real customer financial data in fixtures.
+
+## Acceptance and evidence rules
+
+A test passes only when its result is tied to the exact commit, test environment and fixture/provider sandbox. Required evidence includes request/response correlation IDs with secrets redacted, ledger before/after assertions, webhook event IDs, reconciliation outputs and test-run logs. Synthetic fixtures must be clearly labeled. A test suite that does not exercise live-provider behavior must not be described as proving live-provider readiness. Critical financial invariants require deterministic tests and concurrency/replay coverage.

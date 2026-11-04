@@ -1,6 +1,12 @@
-# Payment API & Event Contract — Outline
+> **3i-XaaS Payment Baseline:** v1.0 — 2026-11-04  
+> **Scope approval:** Approved by the project owner for architecture and documentation scope.  
+> **Repository disposition:** PR #24; independent review and merge are pending. This document is not yet a LOCKED repository baseline.  
+> **Permitted use:** Detailed design and controlled non-production implementation planning. This baseline does not authorize production schema/permission changes, live credentials, real-money processing, card issuance, module activation, or deployment.  
+> **Controlling policy:** Existing III Wallet ADR-001, Baseline Lock policy, Phase restrictions, and Release Gates remain in force.
 
-**Status:** Contract outline; endpoint schemas require implementation review.
+# Payment API & Event Contract — Baseline v1.0
+
+**Status:** Baseline contract direction v1.0; endpoint schemas and transport details must be finalized in implementation ADRs before runtime exposure.
 
 ## API conventions
 - Authenticated server context and account authorization for all commands.
@@ -41,3 +47,12 @@ Each event includes event ID, schema version, timestamps, aggregate ID, correlat
 
 ## Webhook security
 Verify signature against exact raw request body and documented canonicalization. Deduplicate by provider/account/event identity. Acknowledge per provider requirements, enqueue durable processing and retrieve authoritative provider resource before financial posting.
+
+## Error and consistency contract
+
+- Responses use stable internal resource IDs and normalized domain status; provider-specific IDs are opaque references.
+- Mutating requests require an idempotency key scoped to authenticated tenant/account and operation. Reuse with a different request body returns a conflict; identical retries return the original outcome.
+- Amount/currency are validated server-side against account, product, country and provider capabilities. Never accept a client-supplied balance or authoritative fee/status.
+- Use explicit error categories: VALIDATION_ERROR, NOT_FOUND, FORBIDDEN, CONFLICT, IDEMPOTENCY_CONFLICT, PROVIDER_UNAVAILABLE, PROVIDER_UNKNOWN, LIMIT_EXCEEDED and REQUIRES_REVIEW.
+- A timeout after provider submission is UNKNOWN/PENDING until the original attempt is retrieved or reconciled; do not create a second provider charge as automatic failover.
+- Pagination, filtering, rate limits, retention, authentication scopes and exact response schemas are implementation deliverables and must be reviewed before publishing endpoints.
